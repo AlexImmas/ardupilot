@@ -5,7 +5,7 @@
 #include "Sub.h"
 
 // aflc4_init - initialize nonlinear controller
-bool Sub::aflc4_init()
+bool Sub::nonlin_init()
 {
     // fail to initialise AFLC mode if no GPS lock 
     if (!position_ok()) {
@@ -19,7 +19,7 @@ bool Sub::aflc4_init()
 }
 
 // aflc4_run - run nonlinear controller
-void Sub::aflc4_run()
+void Sub::nonlin_run()
 {
 
     // if motors not enabled set throttle to zero and exit immediately
