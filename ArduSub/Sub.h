@@ -496,6 +496,9 @@ private:
     void guided_limit_init_time_and_pos();
     bool guided_limit_check();
 
+    bool mymode_init(void);
+    void mymode_run();
+
     bool poshold_init(void);
     void poshold_run();
 
