@@ -347,6 +347,8 @@ private:
 
     AC_PosControl_Sub pos_control;
 
+    AC_NonLinearControl nonlin_control;
+
     AC_WPNav wp_nav;
     AC_Loiter loiter_nav;
     AC_Circle circle_nav;

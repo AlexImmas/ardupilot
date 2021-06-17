@@ -9,8 +9,12 @@ class AC_AFLC_4D {
 public:
 
     // Constructore for AFLC
-    AC_AFLC_4D(int n, float t, Vector4f b, Vector4f l, float u1, float u2, 
-        Vector4f c, MatrixXf g, Vector4f pos_init, Vector4f vel_init);
+    AC_AFLC_4D(int n, float t, 
+    float b1, float b2, float b3, float b4, 
+    float l1, float l2, float l3, float l4, 
+    float u1, float u2, 
+    float c11, float c12, float c13, float c14, 
+    float g);
 
     // Build reference model matrices
     void build_reference_model();
@@ -43,14 +47,16 @@ public:
 
 protected:
 
-    // Control Parameters
+     // Control Parameters
     int _N;
     float _dt;        // timesteps in second
+    float _lambda1, _lambda2, _lambda3, _lambda4;
     Vector4f _lambda; // Control gains
     float _uU;     // upper bound on control input
     float _uL;      // lower bound on control input
 
     // Adaptive parameters
+    float _c11, _c12, _c13, _c14;
     Vector4f _c1;
     MatrixXf _gamma;
 
@@ -73,6 +79,7 @@ protected:
     VectorXf _dtheta;
 
     // Reference model Parameters
+    float _beta1, _beta2, _beta3, _beta4;
     Vector4f _beta;  // bandwidth
 
     // Reference model Matrices
@@ -83,11 +90,6 @@ protected:
     Vector4f _eta_r;           // reference position
     Vector4f _deta_r;          // reference velocity
     Vector4f _d2eta_r;         // reference acceleration
-
-
-
-
-
 };
 
 

@@ -8,22 +8,37 @@ using namespace std;
 using namespace Eigen;
 
 #include "AC_AFLC_4D.h"
-#include "AC_RefModel.h"
 
-AC_AFLC_4D::AC_AFLC_4D(int n, float t, Vector4f b, Vector4f l, float u1, float u2, 
-    Vector4f c, MatrixXf g, Vector4f pos_init, Vector4f vel_init)
+AC_AFLC_4D::AC_AFLC_4D(int n, float t, 
+    float b1, float b2, float b3, float b4, 
+    float l1, float l2, float l3, float l4, 
+    float u1, float u2, 
+    float c11, float c12, float c13, float c14, 
+    float g)
     : _N(n),
       _dt(t),
-      _lambda(l),
+      _beta1(b1), _beta2(b2), _beta3(b3), _beta4(b4),
+      _lambda1(l1), _lambda2(l2), _lambda3(l3), _lambda4(l4), 
       _uU(u1),
       _uL(u2),
-      _c1(c),
-      _gamma(g),
-      _beta(b),
-      _eta_r(pos_init),
-      _deta_r(vel_init),
-      _d2eta_r(Vector4f::Zero(4))
+      _c11(c11), _c12(c12), _c13(c13), _c14(c14), 
+      _gain(g)
+      // _eta_r(pos_init),
+      // _deta_r(vel_init),
+      // _d2eta_r(Vector4f::Zero(4))
     {
+        // Assign reference model bandwitch
+        _beta << _beta1, _beta2, _beta3, _beta4;
+
+        // Assign reference model bandwitch
+        _lambda << _lambda1, _lambda2, _lambda3, _lambda4;
+
+        // Assign adpater law paramenter
+        _c1 << _c11, _c12, _c13, _c14;
+
+        // Assign adpative law gain
+        _gamma = _gain * MatrixXf::Identity(10,10);
+
         // Initialize transformation matrices 
         _J  =  Matrix4f::Identity(4,4);  
         _dJ =  Matrix4f::Zero(4,4);  
@@ -43,7 +58,7 @@ AC_AFLC_4D::AC_AFLC_4D(int n, float t, Vector4f b, Vector4f l, float u1, float u
 
 
 // Build reference model matrices
-void AC_AFLC_4D::build_reference_model()
+void AC_AFLC_4D::init_reference_model(Vector4f eta_r0, Vector4f deta_r0)
 {
 
     //// Compute matrices for continuous-time model
@@ -79,6 +94,13 @@ void AC_AFLC_4D::build_reference_model()
 
     // MAtrix B
     _B = Ac.inverse()*(_A-MatrixXf::Identity(3*_N,3*_N))*Bc;
+
+    //// Initiazlie reference model states
+    _eta_r = eta_r0;
+    _deta_r = deta_r0;
+    _d2eta_r = Vector4f::Zero(4);
+
+
 
 }
 
