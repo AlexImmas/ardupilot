@@ -44,6 +44,10 @@ bool Sub::set_mode(control_mode_t mode, ModeReason reason)
         success = surface_init();
         break;
 
+    case MY_MODE:
+        success = mymode_init();
+        break;
+
 #if POSHOLD_ENABLED == ENABLED
     case POSHOLD:
         success = poshold_init();
@@ -134,6 +138,10 @@ void Sub::update_flight_mode()
 
     case SURFACE:
         surface_run();
+        break;
+
+    case MY_MODE:
+        mymode_run();
         break;
 
 #if POSHOLD_ENABLED == ENABLED
