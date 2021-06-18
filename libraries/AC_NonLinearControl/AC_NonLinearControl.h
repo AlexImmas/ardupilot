@@ -3,16 +3,17 @@
 // @file AC_NonLinearControl.h
 // Ardusub nonlinear control library
 
-#include <Eigen/Dense>
-using namespace Eigen;
 
-#include <AP_Common/AP_Common.h>               
+//#include <AP_Common/AP_Common.h>               
 #include <AP_Param/AP_Param.h>
-#include <AP_Vehicle/AP_Vehicle.h>              // common vehicle parameters
+//#include <AP_Vehicle/AP_Vehicle.h>              // common vehicle parameters
 #include <AP_AHRS/AP_AHRS_View.h>
 #include <AP_Motors/AP_Motors.h>                // motors library
-#include <AP_Motors/AP_MotorsMulticopter.h>
+//#include <AP_Motors/AP_MotorsMulticopter.h>
 #include <AP_InertialNav/AP_InertialNav.h>      // Inertial Navigation library
+
+#include <eigen-3.3.9/Eigen/Dense>
+//using namespace Eigen;
 #include <AC_AFLC/AC_AFLC_4D.h>
 
 
@@ -41,7 +42,7 @@ public:
 
     // Constructor
     AC_NonLinearControl(AP_AHRS_View & ahrs, const AP_InertialNav& inav,
-                     const AP_Motors & motors, float dt);
+                            AP_Motors & motors, float dt, float u1);
 
     // Empty destructor to suppress compiler warning
     //virtual ~AC_NonLinearControl() {}
@@ -62,13 +63,13 @@ public:
     void update_state();
 
     // Update rotation amtrix
-    void update_rot_matrix();
+    void update_rot_matrix(float & roll, float & pitch, float & yaw);
 
     // Convert a 321-intrinsic euler angle derivative to an angular velocity vector
-    void euler_rate_to_ang_vel(const Vector3f& euler_rad, const Vector3f& euler_rate_rads, Vector3f& ang_vel_rads);
+    void euler_rate_to_ang_vel(const Eigen::Vector3f& euler_rad, const Eigen::Vector3f& euler_rate_rads, Eigen::Vector3f& ang_vel_rads);
 
     // Convert an angular velocity vector to a 321-intrinsic euler angle derivative
-    bool ang_vel_to_euler_rate(const Vector3f& euler_rad, const Vector3f& ang_vel_rads, Vector3f& euler_rate_rads);
+    bool ang_vel_to_euler_rate(const Eigen::Vector3f& euler_rad, const Eigen::Vector3f& ang_vel_rads, Eigen::Vector3f& euler_rate_rads);
 
     // convert a vector from body to earth frame
     Vector3f body_to_earth(const Vector3f &v) const ;
@@ -76,25 +77,28 @@ public:
     // convert a vector from earth to body frame
     Vector3f earth_to_body(const Vector3f &v) const ;
 
+    static const struct AP_Param::GroupInfo var_info[];
+
 
 protected:
 
     // Parameters
     float       _dt;                    // time difference (in seconds) between calls from the main program
     int         _N;                      // Model dof
+    float       _u1;                    // Max control input (for scaling)
 
     // Variables
-    Vector4f _target;// target location in cm from home
-    VVector4f _eta;           // _eta(1:3)  : AUV's position in NEU frame in cm relative to home (pos where UUV is armed)
+    Eigen::Vector4f _target;// target location in cm from home
+    Eigen::Vector4f _eta;           // _eta(1:3)  : AUV's position in NEU frame in cm relative to home (pos where UUV is armed)
                               // _eta(4:N)  : AUV's euler angles (rad) 
-    Vector4f _nu;             // _nu(1:3)   : AUV's body fixed linear velocity
+    Eigen::Vector4f _nu;             // _nu(1:3)   : AUV's body fixed linear velocity
                               // _nu(4:N)   : AUV's body fixed angular velocity
-    Vector4f _deta;           // _deta(1:3) : AUV's velocity in NEU frame (cm/s)
+    Eigen::Vector4f _deta;           // _deta(1:3) : AUV's velocity in NEU frame (cm/s)
                               // _deta(4:N) : AUV's euler rate vector
-    Vector4f _tau;   // control input (N) 
+    Eigen::Vector4f _tau;   // control input (N) 
 
     // Transformation matrices
-    Matrix3f _rot_mat         // Rotation matrix J: _deta(1:3) = _rot_mat * _nu(1:3)
+    Matrix3f _rot_mat;         // Rotation matrix J: _deta(1:3) = _rot_mat * _nu(1:3)
 
 
     // references to control libraries
@@ -103,9 +107,9 @@ protected:
     // references to inertial nav and ahrs libraries
     AP_AHRS_View &                  _ahrs;
     const AP_InertialNav &          _inav;
-    const AP_Motors &               _motors; //AP_MotorsMulticopter &          _motors_multi; 
+    AP_Motors &               _motors; //AP_MotorsMulticopter &          _motors_multi; 
 
 
 
 
-}
+};

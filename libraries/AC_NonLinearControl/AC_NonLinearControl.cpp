@@ -1,19 +1,29 @@
+#include <eigen-3.3.9/Eigen/Dense>
+//using namespace Eigen;
+
 #include "AC_NonLinearControl.h"
-#include <Eigen/Dense>
-using namespace Eigen;
+
+// table of user settable parameters
+const AP_Param::GroupInfo AC_NonLinearControl::var_info[] = {
+
+   // AP_GROUPINFO("P",    0, AC_NonLinearControl, _dt, 0), 
+
+    AP_GROUPEND
+};
 
 
 AC_NonLinearControl::AC_NonLinearControl(AP_AHRS_View & ahrs, const AP_InertialNav& inav,
-                    const AP_MotorsMulticopter& motors, float dt) :
+                                AP_Motors & motors, float dt, float u1) :
         _dt(dt),
         _N(N),
+        _u1(u1),
         AFLC(N, dt, BETA1, BETA2, BETA3, BETA4, LAMBDA1, LAMBDA2, LAMBDA3, LAMBDA4,
                  UMAX, UMIN, C1, C2, C3, C4, GAMMA),
         _ahrs(ahrs),
         _inav(inav),
         _motors(motors)
         {
-            AP_Param::setup_object_defaults(this, var_info);
+           AP_Param::setup_object_defaults(this, var_info); 
 
         }
 
@@ -24,15 +34,21 @@ void AC_NonLinearControl::init_nonlin_control()
 
     // Euler angles in body-frame (b), angular velocity in body-frame (b) 
     // and Euler rate in NEU-frame (n) 
-    Vector3f ang_b; 
-    ang_b(0) = _ahrs.get_pitch(); ang_b(1) = _ahrs.get_roll(); ang_b(2) = _ahrs.get_yaw();
-    Vector3f ang_vel_b = _ahrs.get_gyro();
-    Vector3f ang_vel_n;
-    ang_vel_to_euler_rate(ang_b, ang_vel_b, ang_vel_n)
+    Eigen::Vector3f ang_b; 
+    ang_b(0) = _ahrs.pitch ; ang_b(1) = _ahrs.roll; ang_b(2) = _ahrs.yaw;
+    //Eigen::Vector3f ang_vel_b = _ahrs.get_gyro();
+    Eigen::Vector3f ang_vel_b;
+    ang_vel_b(0) = _ahrs.get_gyro()[0]; ang_vel_b(1) = _ahrs.get_gyro()[1]; ang_vel_b(2) = _ahrs.get_gyro()[2];
+    Eigen::Vector3f ang_vel_n = Eigen::Vector3f::Zero(3);
+    ang_vel_to_euler_rate(ang_b, ang_vel_b, ang_vel_n);
 
     // Position in NEU-frame (n), Velocity in NEU-frame (n) and in body-frame (b)
-    Vector3f pos_n     = _inav.get_position()
-    Vector3f pos_vel_n = _inav.get_velocity();
+    //Eigen::Vector3f pos_n     = _inav.get_position();
+    Eigen::Vector3f pos_n;
+    pos_n(0) = _inav.get_position()[0]; pos_n(1) = _inav.get_position()[1]; pos_n(2) = _inav.get_position()[2];
+    //Eigen::Vector3f pos_vel_n = _inav.get_velocity();
+    Eigen::Vector3f pos_vel_n;
+    pos_vel_n(0) = _inav.get_velocity()[0]; pos_vel_n(1) = _inav.get_velocity()[1]; pos_vel_n(2) = _inav.get_velocity()[2];
  
     //// Relax controller - Set target to current position
     _target(0) = pos_n(0);
@@ -44,7 +60,7 @@ void AC_NonLinearControl::init_nonlin_control()
 
     //// Building reference model matrices and initialize reference states
     // Define eta_r0
-    Vector4f eta_r0;
+    Eigen::Vector4f eta_r0;
     eta_r0(0) = pos_n(0);
     eta_r0(1) = pos_n(1);
     eta_r0(2) = pos_n(2);
@@ -54,6 +70,7 @@ void AC_NonLinearControl::init_nonlin_control()
 
 
     // Define deta_r0
+    Eigen::Vector4f deta_r0;
     deta_r0(0) = pos_vel_n(0);
     deta_r0(1) = pos_vel_n(1);
     deta_r0(2) = pos_vel_n(2);
@@ -87,15 +104,15 @@ void AC_NonLinearControl::update_output()
 {
 
     // Scale control inputs between [-1,1] except heave in [0,1]
-    _tau = _tau/u1;
+    _tau = _tau/_u1;
     _tau(2) = (_tau(2)+1)/2;
 
-    motors.set_forward(_tau(0));
-    motors.set_lateral(_tau(1));
-    motors.set_throttle(_tau(2));
-    motors.set_pitch(0);
-    motors.set_roll(0);
-    motors.set_yaw(tau(3));
+    _motors.set_forward(_tau(0));
+    _motors.set_lateral(_tau(1));
+    _motors.set_throttle(_tau(2));
+    _motors.set_pitch(0);
+    _motors.set_roll(0);
+    _motors.set_yaw(_tau(3));
 
 }
 
@@ -108,17 +125,27 @@ void AC_NonLinearControl::update_state()
 {
     // Euler angles in body-frame (b), angular velocity in body-frame (b) 
     // and Euler rate in NEU-frame (n) 
-    Vector3f ang_b; 
-    ang_b(0) = _ahrs.get_pitch(); ang_b(1) = _ahrs.get_roll(); ang_b(2) = _ahrs.get_yaw();
-    Vector3f ang_vel_b = _ahrs.get_gyro();
-    Vector3f ang_vel_n;
-    ang_vel_to_euler_rate(ang_b, ang_vel_b, ang_vel_n)
+    Eigen::Vector3f ang_b; 
+    ang_b(0) = _ahrs.pitch; ang_b(1) = _ahrs.roll; ang_b(2) = _ahrs.yaw;
+    //Eigen::Vector3f ang_vel_b = _ahrs.get_gyro();
+    Eigen::Vector3f ang_vel_b;
+    ang_vel_b(0) = _ahrs.get_gyro()[0]; ang_vel_b(1) = _ahrs.get_gyro()[1]; ang_vel_b(2) = _ahrs.get_gyro()[2];
+    Eigen::Vector3f ang_vel_n = Eigen::Vector3f::Zero(3);
+    ang_vel_to_euler_rate(ang_b, ang_vel_b, ang_vel_n);
 
     // Position in NEU-frame (n), Velocity in NEU-frame (n) and in body-frame (b)
-    Vector3f pos_n     = _inav.get_position()
-    Vector3f pos_vel_n = _inav.get_velocity();
-    update_rot_matrix(ang_b(0), ang_b(1), ang_b(2));
-    Vector3f pos_vel_b = earth_to_body(pos_vel_n);
+    //Eigen::Vector3f pos_n     = _inav.get_position();
+    Eigen::Vector3f pos_n;
+    pos_n(0) = _inav.get_position()[0]; pos_n(1) = _inav.get_position()[1]; pos_n(2) = _inav.get_position()[2];
+    
+    Vector3f pos_vel_n_meas = _inav.get_velocity();
+    update_rot_matrix(ang_b(1), ang_b(0), ang_b(2));
+    Vector3f pos_vel_b_meas = earth_to_body(pos_vel_n_meas);
+    Eigen::Vector3f pos_vel_n;
+    pos_vel_n(0) = pos_vel_n_meas[0]; pos_vel_n(1) = pos_vel_n_meas[1]; pos_vel_n(2) = pos_vel_n_meas[2];
+    Eigen::Vector3f pos_vel_b;
+    pos_vel_b(0) = pos_vel_b_meas[0]; pos_vel_b(1) = pos_vel_b_meas[1]; pos_vel_b(2) = pos_vel_b_meas[2];
+
 
     // Define _eta
     _eta(0) = pos_n(0);
@@ -151,7 +178,7 @@ void AC_NonLinearControl::update_rot_matrix(float & roll, float & pitch, float &
 }
 
 // Convert a 321-intrinsic euler angle derivative to an angular velocity vector
-void AC_NonLinearControl::euler_rate_to_ang_vel(const Vector3f& euler_rad, const Vector3f& euler_rate_rads, Vector3f& ang_vel_rads)
+void AC_NonLinearControl::euler_rate_to_ang_vel(const Eigen::Vector3f& euler_rad, const Eigen::Vector3f& euler_rate_rads, Eigen::Vector3f& ang_vel_rads)
 {
     float sin_theta = sinf(euler_rad(1));
     float cos_theta = cosf(euler_rad(1));
@@ -165,7 +192,7 @@ void AC_NonLinearControl::euler_rate_to_ang_vel(const Vector3f& euler_rad, const
 
 // Convert an angular velocity vector to a 321-intrinsic euler angle derivative
 // Returns false if the vehicle is pitched 90 degrees up or down
-bool AC_NonLinearControl::ang_vel_to_euler_rate(const Vector3f& euler_rad, const Vector3f& ang_vel_rads, Vector3f& euler_rate_rads)
+bool AC_NonLinearControl::ang_vel_to_euler_rate(const Eigen::Vector3f& euler_rad, const Eigen::Vector3f& ang_vel_rads, Eigen::Vector3f& euler_rate_rads)
 {
     float sin_theta = sinf(euler_rad(1));
     float cos_theta = cosf(euler_rad(1));
@@ -184,13 +211,13 @@ bool AC_NonLinearControl::ang_vel_to_euler_rate(const Vector3f& euler_rad, const
 }
 
 // convert a vector from body to earth frame
-Vector3f AC_NonLinearControl::body_to_earth(const Vector3f &v) const 
+Vector3f AC_NonLinearControl::body_to_earth(const Vector3f &v) const
 {
         return v * _rot_mat;
 }
 
     // convert a vector from earth to body frame
-Vector3f AC_NonLinearControl::earth_to_body(const Vector3f &v) const 
+Vector3f AC_NonLinearControl::earth_to_body(const Vector3f &v) const
 {
-        return _rot_mat.transpose() * v ;
+        return _rot_mat.mul_transpose(v) ;
 }

@@ -277,7 +277,7 @@ class Board:
         if cfg.options.Werror:
             errors = ['-Werror',
                       '-Werror=missing-declarations',
-                      '-Werror=float-equal',
+                      #'-Werror=float-equal', -> 6/18: Commented out to avoid error with eigen3
                       '-Werror=undef',
                     ]
             env.CFLAGS += errors
@@ -447,7 +447,7 @@ class sitl(Board):
             cfg.define('UAVCAN_EXCEPTIONS', 0)
 
         env.CXXFLAGS += [
-            '-Werror=float-equal'
+            # '-Werror=float-equal' -> 6/18: Commented out to avoid error with eigen3
         ]
 
         if not cfg.env.DEBUG:

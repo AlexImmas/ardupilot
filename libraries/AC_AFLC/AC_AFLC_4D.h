@@ -1,8 +1,8 @@
 // Gneeric Adaptive Feedback Linearization class - 4 dof
 #pragma once
 
-#include <Eigen/Dense>
-using namespace Eigen;
+#include <eigen-3.3.9/Eigen/Dense>
+//using namespace Eigen;
 
 
 class AC_AFLC_4D {
@@ -17,33 +17,33 @@ public:
     float g);
 
     // Build reference model matrices
-    void build_reference_model();
+    void init_reference_model(Eigen::Vector4f eta_r0, Eigen::Vector4f deta_r0);
 
     // Update reference model states
-    void update_reference_model(Vector4f target);
+    void update_reference_model(Eigen::Vector4f target);
 
     // Update transformation matrices
-    void update_transformation_matrices(Vector4f eta, Vector4f nu);
+    void update_transformation_matrices(Eigen::Vector4f eta, Eigen::Vector4f nu);
 
     // Update anti windup filter
-    void update_anti_windup(Vector4f eta);
+    void update_anti_windup(Eigen::Vector4f eta);
 
     // Compute commanded acceleration 
-    void update_commanded_acceleration(Vector4f eta, Vector4f deta, Vector4f nu);
+    void update_commanded_acceleration(Eigen::Vector4f eta, Eigen::Vector4f deta, Eigen::Vector4f nu);
 
     // Parameters update law
-    void update_parameters_law(Vector4f eta, Vector4f deta, Vector4f nu);
+    void update_parameters_law(Eigen::Vector4f eta, Eigen::Vector4f deta, Eigen::Vector4f nu);
 
     // Compute control input
     void update_control_input();
 
      // Get states
-    Vector4f get_ref_position() const;
-    Vector4f get_ref_velocity() const;
-    Vector4f get_ref_acceleration() const;
+    Eigen::Vector4f get_ref_position() const;
+    Eigen::Vector4f get_ref_velocity() const;
+    Eigen::Vector4f get_ref_acceleration() const;
 
     // Get control inpuots
-    Vector4f get_control_input() const;
+    Eigen::Vector4f get_control_input() const;
 
 protected:
 
@@ -51,45 +51,46 @@ protected:
     int _N;
     float _dt;        // timesteps in second
     float _lambda1, _lambda2, _lambda3, _lambda4;
-    Vector4f _lambda; // Control gains
+    Eigen::Vector4f _lambda; // Control gains
     float _uU;     // upper bound on control input
     float _uL;      // lower bound on control input
 
     // Adaptive parameters
     float _c11, _c12, _c13, _c14;
-    Vector4f _c1;
-    MatrixXf _gamma;
+    Eigen::Vector4f _c1;
+    float _gain;
+    Eigen::MatrixXf _gamma;
 
     // Transformation matrices
-    Matrix4f _J;      // Transformation matrix
-    Matrix4f _dJ;     // Derivative of trasnformation matrix
+    Eigen::Matrix4f _J;      // Transformation matrix
+    Eigen::Matrix4f _dJ;     // Derivative of trasnformation matrix
 
     // Control Variables
-    Vector4f _q;      // Integrator term
-    Vector4f _u;      // control input
-    Vector4f _Iawp;   // Anti windup filter
-    Vector4f _a_eta;  // commanded acceleration in body-fixed frame
-    Vector4f _a_nu;   // commanded acceleration in earth-fixed frame
+    Eigen::Vector4f _q;      // Integrator term
+    Eigen::Vector4f _u;      // control input
+    Eigen::Vector4f _Iawp;   // Anti windup filter
+    Eigen::Vector4f _a_eta;  // commanded acceleration in body-fixed frame
+    Eigen::Vector4f _a_nu;   // commanded acceleration in earth-fixed frame
 
 
     // Adaptive variables
-    VectorXf _theta;  // Parameters estimate
-    MatrixXf _Phi;
-    Vector4f _s; 
-    VectorXf _dtheta;
+    Eigen::VectorXf _theta;  // Parameters estimate
+    Eigen::MatrixXf _Phi;
+    Eigen::Vector4f _s; 
+    Eigen::VectorXf _dtheta;
 
     // Reference model Parameters
     float _beta1, _beta2, _beta3, _beta4;
-    Vector4f _beta;  // bandwidth
+    Eigen::Vector4f _beta;  // bandwidth
 
     // Reference model Matrices
-    MatrixXf _A;           
-    MatrixXf _B; 
+    Eigen::MatrixXf _A;           
+    Eigen::MatrixXf _B; 
 
     // Reference model States       
-    Vector4f _eta_r;           // reference position
-    Vector4f _deta_r;          // reference velocity
-    Vector4f _d2eta_r;         // reference acceleration
+    Eigen::Vector4f _eta_r;           // reference position
+    Eigen::Vector4f _deta_r;          // reference velocity
+    Eigen::Vector4f _d2eta_r;         // reference acceleration
 };
 
 

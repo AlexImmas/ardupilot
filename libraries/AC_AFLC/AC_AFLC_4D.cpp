@@ -1,11 +1,11 @@
 // Generic Reference Model Class
 #include <iostream>
 #include <math.h>    
-#include <Eigen/Dense>
-#include <Eigen/LU>
-#include <unsupported/Eigen/MatrixFunctions>
+#include <eigen-3.3.9/Eigen/Dense>
+#include <eigen-3.3.9/Eigen/LU>
+#include <eigen-3.3.9/unsupported/Eigen/MatrixFunctions>
 using namespace std;
-using namespace Eigen;
+//using namespace Eigen;
 
 #include "AC_AFLC_4D.h"
 
@@ -37,43 +37,45 @@ AC_AFLC_4D::AC_AFLC_4D(int n, float t,
         _c1 << _c11, _c12, _c13, _c14;
 
         // Assign adpative law gain
-        _gamma = _gain * MatrixXf::Identity(10,10);
+        _gamma = _gain * Eigen::MatrixXf::Identity(10,10);
 
         // Initialize transformation matrices 
-        _J  =  Matrix4f::Identity(4,4);  
-        _dJ =  Matrix4f::Zero(4,4);  
+        _J  =  Eigen::Matrix4f::Identity(4,4);  
+        _dJ =  Eigen::Matrix4f::Zero(4,4);  
 
         // Initialize control variables         
-        _q    = Vector4f::Zero(4);
-        _u    = Vector4f::Zero(4);
+        _q    = Eigen::Vector4f::Zero(4);
+        _u    = Eigen::Vector4f::Zero(4);
 
         // Initialize adaptive variables
-        _theta = VectorXf::Zero(10);
-        _Phi = MatrixXf::Zero(4,10); 
+        _theta = Eigen::VectorXf::Zero(10);
+        _Phi = Eigen::MatrixXf::Zero(4,10); 
 
         // Initialize reference model matrices
-        MatrixXf _A(12,12);           
-        MatrixXf _B(12,4); 
+        _A = Eigen::MatrixXf::Zero(12,12);
+        _B = Eigen::MatrixXf::Zero(12,4);
+        //MatrixXf _A(12,12);           
+        //MatrixXf _B(12,4); 
     }
 
 
 // Build reference model matrices
-void AC_AFLC_4D::init_reference_model(Vector4f eta_r0, Vector4f deta_r0)
+void AC_AFLC_4D::init_reference_model(Eigen::Vector4f eta_r0, Eigen::Vector4f deta_r0)
 {
 
     //// Compute matrices for continuous-time model
     // Matrix Ac
-    MatrixXf Ac(3*_N,3*_N);      
+    Eigen::MatrixXf Ac(3*_N,3*_N);      
     
     // Upper block of rows
-    Ac.block(0,0,_N,_N) = MatrixXf::Zero(_N,_N); 
-    Ac.block(0,_N,_N,_N) = MatrixXf::Identity(_N,_N);
-    Ac.block(0,2*_N,_N,_N) = MatrixXf::Zero(_N,_N);
+    Ac.block(0,0,_N,_N) = Eigen::MatrixXf::Zero(_N,_N); 
+    Ac.block(0,_N,_N,_N) = Eigen::MatrixXf::Identity(_N,_N);
+    Ac.block(0,2*_N,_N,_N) = Eigen::MatrixXf::Zero(_N,_N);
 
     // Medium block of rows
-    Ac.block(_N,0,_N,_N) = MatrixXf::Zero(_N,_N);
-    Ac.block(_N,_N,_N,_N) = MatrixXf::Zero(_N,_N);
-    Ac.block(_N,2*_N,_N,_N) = MatrixXf::Identity(_N,_N);
+    Ac.block(_N,0,_N,_N) = Eigen::MatrixXf::Zero(_N,_N);
+    Ac.block(_N,_N,_N,_N) = Eigen::MatrixXf::Zero(_N,_N);
+    Ac.block(_N,2*_N,_N,_N) = Eigen::MatrixXf::Identity(_N,_N);
 
     // Lower block of rows
     Ac.block(2*_N,0,_N,_N).diagonal() = - (_beta.cwiseProduct(_beta)).cwiseProduct(_beta);
@@ -81,33 +83,33 @@ void AC_AFLC_4D::init_reference_model(Vector4f eta_r0, Vector4f deta_r0)
     Ac.block(2*_N,2*_N,_N,_N).diagonal() = -3 * _beta;
 
     // Matrix Bc
-    MatrixXf Bc(3*_N,_N); 
-    Bc.block(0,0,_N,_N) = MatrixXf::Zero(_N,_N);
-    Bc.block(_N,0,_N,_N) = MatrixXf::Zero(_N,_N);
+    Eigen::MatrixXf Bc(3*_N,_N); 
+    Bc.block(0,0,_N,_N) = Eigen::MatrixXf::Zero(_N,_N);
+    Bc.block(_N,0,_N,_N) = Eigen::MatrixXf::Zero(_N,_N);
     Bc.block(2*_N,0,_N,_N).diagonal() = (_beta.cwiseProduct(_beta)).cwiseProduct(_beta);
 
     //// Compute matrices for discrete-time model
     // Matrix A
-    MatrixXf Acdt(3*_N,3*_N);  
+    Eigen::MatrixXf Acdt(3*_N,3*_N);  
     Acdt = _dt * Ac;
     _A = Acdt.exp();
 
     // MAtrix B
-    _B = Ac.inverse()*(_A-MatrixXf::Identity(3*_N,3*_N))*Bc;
+    _B = Ac.inverse()*(_A-Eigen::MatrixXf::Identity(3*_N,3*_N))*Bc;
 
     //// Initiazlie reference model states
     _eta_r = eta_r0;
     _deta_r = deta_r0;
-    _d2eta_r = Vector4f::Zero(4);
+    _d2eta_r = Eigen::Vector4f::Zero(4);
 
 
 
 }
 
-void AC_AFLC_4D::update_reference_model(Vector4f target)
+void AC_AFLC_4D::update_reference_model(Eigen::Vector4f target)
 {
     // Delare state-space vector
-    VectorXf y(3*_N);
+    Eigen::VectorXf y(3*_N);
     y.head(_N) = _eta_r;
     y.segment(_N,_N) = _deta_r;
     y.tail(_N) = _d2eta_r;
@@ -122,7 +124,7 @@ void AC_AFLC_4D::update_reference_model(Vector4f target)
 }
 
 // Update transformation matrices
-void AC_AFLC_4D::update_transformation_matrices(Vector4f eta, Vector4f nu)
+void AC_AFLC_4D::update_transformation_matrices(Eigen::Vector4f eta, Eigen::Vector4f nu)
 {
     _J(0,0) = cos(eta(3));
     _J(0,1) = -sin(eta(3));
@@ -136,9 +138,9 @@ void AC_AFLC_4D::update_transformation_matrices(Vector4f eta, Vector4f nu)
 }
 
 // Anti windup
-void AC_AFLC_4D::update_anti_windup(Vector4f eta)
+void AC_AFLC_4D::update_anti_windup(Eigen::Vector4f eta)
 {
-    _Iawp = Vector4f::Ones(4);
+    _Iawp = Eigen::Vector4f::Ones(4);
 
     for(int i=0; i<4; i++){
         // Saturated and tending to be more saturated -> Stop integration
@@ -151,7 +153,7 @@ void AC_AFLC_4D::update_anti_windup(Vector4f eta)
 }
 
 // Compute commanded acceleration 
-void AC_AFLC_4D::update_commanded_acceleration(Vector4f eta, Vector4f deta, Vector4f nu)
+void AC_AFLC_4D::update_commanded_acceleration(Eigen::Vector4f eta, Eigen::Vector4f deta, Eigen::Vector4f nu)
 {
     // I-term
     _q += _dt * _Iawp.cwiseProduct(eta-_eta_r);
@@ -167,7 +169,7 @@ void AC_AFLC_4D::update_commanded_acceleration(Vector4f eta, Vector4f deta, Vect
 }
 
 // Parameters update law
-void AC_AFLC_4D::update_parameters_law(Vector4f eta, Vector4f deta, Vector4f nu)
+void AC_AFLC_4D::update_parameters_law(Eigen::Vector4f eta, Eigen::Vector4f deta, Eigen::Vector4f nu)
 {
     _Phi(0,0) = _a_nu(0)-nu(3)*nu(1);
     _Phi(0,1) = _a_nu(0);
@@ -216,22 +218,22 @@ void AC_AFLC_4D::update_control_input()
     }
 }
 
-Vector4f AC_AFLC_4D::get_ref_position() const
+Eigen::Vector4f AC_AFLC_4D::get_ref_position() const
 {
     return _eta_r;
 }
 
-Vector4f AC_AFLC_4D::get_ref_velocity() const
+Eigen::Vector4f AC_AFLC_4D::get_ref_velocity() const
 {
     return _deta_r;
 }
 
-Vector4f AC_AFLC_4D::get_ref_acceleration() const
+Eigen::Vector4f AC_AFLC_4D::get_ref_acceleration() const
 {
     return _d2eta_r;
 }
 
-Vector4f AC_AFLC_4D::get_control_input() const
+Eigen::Vector4f AC_AFLC_4D::get_control_input() const
 {
     return _u;
 }

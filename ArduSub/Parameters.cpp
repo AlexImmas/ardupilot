@@ -449,6 +449,10 @@ const AP_Param::Info Sub::var_info[] = {
     // @Path: ../libraries/AC_AttitudeControl/AC_PosControl.cpp
     GOBJECT(pos_control, "PSC", AC_PosControl),
 
+    // @Group: NLC
+    // @Path: ../libraries/AC_NonLinearControl/AC_NonLinearControl.cpp
+    GOBJECT(nonlin_control, "NLC", AC_NonLinearControl),
+
     // @Group: SR0_
     // @Path: GCS_Mavlink.cpp
     GOBJECTN(_gcs.chan_parameters[0],  gcs0,       "SR0_",     GCS_MAVLINK_Parameters),
