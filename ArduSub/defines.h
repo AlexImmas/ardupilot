@@ -41,7 +41,7 @@ enum control_mode_t : uint8_t {
     POSHOLD =      16,  // automatic position hold with manual override, with automatic throttle
     MANUAL =       19,  // Pass-through input with no stabilization
     MOTOR_DETECT = 20,   // Automatically detect motors orientation
-    MY_MODE =      21  // NEW MODE FOR TAFLab Project
+    MY_MODE =      100  // NEW MODE FOR TAFLab Project
 };
 
 // Acro Trainer types
