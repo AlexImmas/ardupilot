@@ -42,6 +42,7 @@ enum control_mode_t : uint8_t {
     MANUAL =       19,  // Pass-through input with no stabilization
     MOTOR_DETECT = 20,   // Automatically detect motors orientation
     NONLIN =      21    // Nonlinear control
+    MY_MODE =      100  // NEW MODE FOR TAFLab Project
 };
 
 // Acro Trainer types
