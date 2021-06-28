@@ -6,14 +6,14 @@
 // table of user settable parameters
 const AP_Param::GroupInfo AC_NonLinearControl::var_info[] = {
 
-   // AP_GROUPINFO("P",    0, AC_NonLinearControl, _dt, 0), 
+   // AP_GROUPINFO("P",    0, AC_NonLinearControl, _dt, 0),
 
     AP_GROUPEND
 };
 
 
 AC_NonLinearControl::AC_NonLinearControl(AP_AHRS_View & ahrs, const AP_InertialNav& inav,
-                                AP_Motors & motors, float dt, float u1) :
+                                AP_Motors & motors, float dt, float u1, AC_WPNav& wpnav) :
         _dt(dt),
         _N(N),
         _u1(u1),
@@ -21,20 +21,21 @@ AC_NonLinearControl::AC_NonLinearControl(AP_AHRS_View & ahrs, const AP_InertialN
                  UMAX, UMIN, C1, C2, C3, C4, GAMMA),
         _ahrs(ahrs),
         _inav(inav),
-        _motors(motors)
+        _motors(motors),
+        _wpnav(wpnav)
         {
-           AP_Param::setup_object_defaults(this, var_info); 
+           AP_Param::setup_object_defaults(this, var_info);
 
         }
 
 
 void AC_NonLinearControl::init_nonlin_control()
 {
-    
 
-    // Euler angles in body-frame (b), angular velocity in body-frame (b) 
-    // and Euler rate in NEU-frame (n) 
-    Eigen::Vector3f ang_b; 
+
+    // Euler angles in body-frame (b), angular velocity in body-frame (b)
+    // and Euler rate in NEU-frame (n)
+    Eigen::Vector3f ang_b;
     ang_b(0) = _ahrs.pitch ; ang_b(1) = _ahrs.roll; ang_b(2) = _ahrs.yaw;
     //Eigen::Vector3f ang_vel_b = _ahrs.get_gyro();
     Eigen::Vector3f ang_vel_b;
@@ -49,7 +50,7 @@ void AC_NonLinearControl::init_nonlin_control()
     //Eigen::Vector3f pos_vel_n = _inav.get_velocity();
     Eigen::Vector3f pos_vel_n;
     pos_vel_n(0) = _inav.get_velocity()[0]; pos_vel_n(1) = _inav.get_velocity()[1]; pos_vel_n(2) = _inav.get_velocity()[2];
- 
+
     //// Relax controller - Set target to current position
     _target(0) = pos_n(0);
     _target(1) = pos_n(1);
@@ -81,51 +82,11 @@ void AC_NonLinearControl::init_nonlin_control()
     AFLC.init_reference_model(eta_r0, deta_r0);
 }
 
-void AC_NonLinearControl::update_nonlin_control()
-{
-      // Update transformation matrices
-      AFLC.update_transformation_matrices(_eta, _nu);
-      // Update reference position
-      AFLC.update_reference_model(_target);
-      //  Anti windup
-      AFLC.update_anti_windup(_eta);
-      // Update commanded acceleration
-      AFLC.update_commanded_acceleration(_eta, _deta, _nu);
-      // Update parameters law
-      AFLC.update_parameters_law(_eta, _deta, _nu);
-      // Compute control input
-      AFLC.update_control_input();
-      // return control inputs
-      _tau = AFLC.get_control_input();
-
-}
-
-void AC_NonLinearControl::update_output()
-{
-
-    // Scale control inputs between [-1,1] except heave in [0,1]
-    _tau = _tau/_u1;
-    _tau(2) = (_tau(2)+1)/2;
-
-    _motors.set_forward(_tau(0));
-    _motors.set_lateral(_tau(1));
-    _motors.set_throttle(_tau(2));
-    _motors.set_pitch(0);
-    _motors.set_roll(0);
-    _motors.set_yaw(_tau(3));
-
-}
-
-void AC_NonLinearControl::update_target()
-{
-
-}
-
 void AC_NonLinearControl::update_state()
 {
-    // Euler angles in body-frame (b), angular velocity in body-frame (b) 
-    // and Euler rate in NEU-frame (n) 
-    Eigen::Vector3f ang_b; 
+    // Euler angles in body-frame (b), angular velocity in body-frame (b)
+    // and Euler rate in NEU-frame (n)
+    Eigen::Vector3f ang_b;
     ang_b(0) = _ahrs.pitch; ang_b(1) = _ahrs.roll; ang_b(2) = _ahrs.yaw;
     //Eigen::Vector3f ang_vel_b = _ahrs.get_gyro();
     Eigen::Vector3f ang_vel_b;
@@ -137,7 +98,7 @@ void AC_NonLinearControl::update_state()
     //Eigen::Vector3f pos_n     = _inav.get_position();
     Eigen::Vector3f pos_n;
     pos_n(0) = _inav.get_position()[0]; pos_n(1) = _inav.get_position()[1]; pos_n(2) = _inav.get_position()[2];
-    
+
     Vector3f pos_vel_n_meas = _inav.get_velocity();
     update_rot_matrix(ang_b(1), ang_b(0), ang_b(2));
     Vector3f pos_vel_b_meas = earth_to_body(pos_vel_n_meas);
@@ -171,6 +132,65 @@ void AC_NonLinearControl::update_state()
     //_deta(4) = TBD
     _deta(3) =  ang_vel_n(2);
 }
+
+void AC_NonLinearControl::update_nonlin_control()
+{
+      // Update transformation matrices
+      AFLC.update_transformation_matrices(_eta, _nu);
+      // Update reference position
+      _target = self.update_target();
+      AFLC.update_reference_model(_target);
+      //  Anti windup
+      AFLC.update_anti_windup(_eta);
+      // Update commanded acceleration
+      AFLC.update_commanded_acceleration(_eta, _deta, _nu);
+      // Update parameters law
+      AFLC.update_parameters_law(_eta, _deta, _nu);
+      // Compute control input
+      AFLC.update_control_input();
+      // return control inputs
+      _tau = AFLC.get_control_input();
+
+}
+
+void AC_NonLinearControl::update_output()
+{
+
+    // Scale control inputs between [-1,1] except heave in [0,1]
+    _tau = _tau/_u1;
+    _tau(2) = (_tau(2)+1)/2;
+
+    _motors.set_forward(_tau(0));
+    _motors.set_lateral(_tau(1));
+    _motors.set_throttle(_tau(2));
+    _motors.set_pitch(0);
+    _motors.set_roll(0);
+    _motors.set_yaw(_tau(3));
+
+}
+
+const Vector3f AC_NonLinearControl::update_target()
+{
+    Eigen::Vector3f target3d;
+    target3d = _wpnav.get_wp_destination();
+
+    Eigen::Vector3f ang_b;
+    ang_b(0) = _ahrs.pitch ;
+    ang_b(1) = _ahrs.roll;
+    ang_b(2) = _ahrs.yaw;
+
+    Eigen::Vector4f _target;
+    _target(0) = target3d(0);
+    _target(1) = target3d(1);
+    _target(2) = target3d(2);
+    _target(3) = ang_b(2);
+
+    return _target
+}
+
+
+
+
 
 void AC_NonLinearControl::update_rot_matrix(float & roll, float & pitch, float & yaw)
 {

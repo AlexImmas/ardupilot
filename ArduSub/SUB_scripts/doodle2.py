@@ -220,7 +220,6 @@ def logData(file, keepitup, start_time):
 
     if keepitup == False:
         file.close()
-
 def timed_logData(file, duration):
     count = 0
     dt = 0.01
@@ -258,8 +257,7 @@ time_start = time.time()
 vehicle.commands.next=0
 
 # Set mode to AUTO to start mission
-
- 1
+vehicle.mode = 101
 file = open("log.txt","a")
 file.truncate(0)
 
