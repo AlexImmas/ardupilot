@@ -13,7 +13,7 @@ const AP_Param::GroupInfo AC_NonLinearControl::var_info[] = {
 
 
 AC_NonLinearControl::AC_NonLinearControl(AP_AHRS_View & ahrs, const AP_InertialNav& inav,
-                                AP_Motors & motors, float dt, float u1, AC_WPNav& wpnav) :
+                                AP_Motors & motors, float dt, float u1) :
         _dt(dt),
         _N(N),
         _u1(u1),
@@ -21,8 +21,7 @@ AC_NonLinearControl::AC_NonLinearControl(AP_AHRS_View & ahrs, const AP_InertialN
                  UMAX, UMIN, C1, C2, C3, C4, GAMMA),
         _ahrs(ahrs),
         _inav(inav),
-        _motors(motors),
-        _wpnav(wpnav)
+        _motors(motors)
         {
            AP_Param::setup_object_defaults(this, var_info);
 
@@ -138,7 +137,7 @@ void AC_NonLinearControl::update_nonlin_control()
       // Update transformation matrices
       AFLC.update_transformation_matrices(_eta, _nu);
       // Update reference position
-      _target = self.update_target();
+     
       AFLC.update_reference_model(_target);
       //  Anti windup
       AFLC.update_anti_windup(_eta);
@@ -169,23 +168,9 @@ void AC_NonLinearControl::update_output()
 
 }
 
-const Vector3f AC_NonLinearControl::update_target()
+void AC_NonLinearControl::update_target()
 {
-    Eigen::Vector3f target3d;
-    target3d = _wpnav.get_wp_destination();
 
-    Eigen::Vector3f ang_b;
-    ang_b(0) = _ahrs.pitch ;
-    ang_b(1) = _ahrs.roll;
-    ang_b(2) = _ahrs.yaw;
-
-    Eigen::Vector4f _target;
-    _target(0) = target3d(0);
-    _target(1) = target3d(1);
-    _target(2) = target3d(2);
-    _target(3) = ang_b(2);
-
-    return _target
 }
 
 
