@@ -4,13 +4,16 @@
 // Ardusub nonlinear control library
 
 
-//#include <AP_Common/AP_Common.h>               
+//#include <AP_Common/AP_Common.h>      
+#include <AP_HAL/HAL.h>
+#include <AP_Logger/AP_Logger.h>         
 #include <AP_Param/AP_Param.h>
 //#include <AP_Vehicle/AP_Vehicle.h>              // common vehicle parameters
 #include <AP_AHRS/AP_AHRS_View.h>
 #include <AP_Motors/AP_Motors.h>                // motors library
 //#include <AP_Motors/AP_MotorsMulticopter.h>
 #include <AP_InertialNav/AP_InertialNav.h>      // Inertial Navigation library
+#include <AP_Common/Location.h>
 
 #include <eigen-3.3.9/Eigen/Dense>
 //using namespace Eigen;
@@ -19,10 +22,10 @@
 
 // Controller parameters (used in constructor)
 #define N                     4                // Model dof
-#define BETA1                 1.0f             // Reference model bandwidth in surge
-#define BETA2                 2.0f             // Reference model bandwidth in sway
-#define BETA3                 3.0f             // Reference model bandwidth in heave
-#define BETA4                 4.0f             // Reference model bandwidth in yaw
+#define BETA1                 0.6f             // Reference model bandwidth in surge
+#define BETA2                 0.6f             // Reference model bandwidth in sway
+#define BETA3                 1.0f             // Reference model bandwidth in heave
+#define BETA4                 2.0f             // Reference model bandwidth in yaw
 #define LAMBDA1               0.4f             // Pole placement gain in surge
 #define LAMBDA2               0.4f             // Pole placement gain in sway
 #define LAMBDA3               0.7f             // Pole placement gain in heave
@@ -57,7 +60,11 @@ public:
     void update_output();
 
     // Update target
-    void update_target();
+    bool update_target(const Vector3f& destination);
+    bool update_target_loc(const Location& destination);
+
+    /// reached_destination - true when we have come within RADIUS cm of the waypoint
+    bool reached_wp_destination();
 
     // Update state
     void update_state();
@@ -76,6 +83,8 @@ public:
 
     // convert a vector from earth to body frame
     Vector3f earth_to_body(const Vector3f &v) const ;
+
+    void logdata();
 
     static const struct AP_Param::GroupInfo var_info[];
 
@@ -99,7 +108,7 @@ protected:
 
     // Transformation matrices
     Matrix3f _rot_mat;         // Rotation matrix J: _deta(1:3) = _rot_mat * _nu(1:3)
-
+    bool _reached_destination;
 
     // references to control libraries
     AC_AFLC_4D AFLC;

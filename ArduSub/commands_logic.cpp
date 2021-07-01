@@ -7,6 +7,7 @@ static enum AutoSurfaceState auto_surface_state = AUTO_SURFACE_STATE_GO_TO_LOCAT
 // start_command - this function will be called when the ap_mission lib wishes to start a new command
 bool Sub::start_command(const AP_Mission::Mission_Command& cmd)
 {
+
     // To-Do: logging when new commands start/end
     if (should_log(MASK_LOG_CMD)) {
         logger.Write_Mission_Cmd(mission, cmd);
@@ -25,7 +26,7 @@ bool Sub::start_command(const AP_Mission::Mission_Command& cmd)
         gcs().send_text(MAV_SEVERITY_WARNING, "BAD NAV AltFrame %d", (int8_t)target_loc.get_alt_frame());
         return false;
     }
-
+   
     switch (cmd.id) {
 
         ///
@@ -124,14 +125,15 @@ bool Sub::start_command(const AP_Mission::Mission_Command& cmd)
 // called by mission library in mission.update()
 bool Sub::verify_command_callback(const AP_Mission::Mission_Command& cmd)
 {
-    if (control_mode == AUTO) {
+   
+    if (control_mode == AUTO || control_mode == NONLIN) {
         bool cmd_complete = verify_command(cmd);
 
         // send message to GCS
         if (cmd_complete) {
             gcs().send_mission_item_reached_message(cmd.index);
         }
-
+     
         return cmd_complete;
     }
     return false;
@@ -141,6 +143,7 @@ bool Sub::verify_command_callback(const AP_Mission::Mission_Command& cmd)
 // check if current mission command has completed
 bool Sub::verify_command(const AP_Mission::Mission_Command& cmd)
 {
+    
     switch (cmd.id) {
         //
         // navigation commands
@@ -220,6 +223,7 @@ void Sub::exit_mission()
 // do_nav_wp - initiate move to next waypoint
 void Sub::do_nav_wp(const AP_Mission::Mission_Command& cmd)
 {
+   
     Location target_loc(cmd.content.location);
     // use current lat, lon if zero
     if (target_loc.lat == 0 && target_loc.lng == 0) {
@@ -244,7 +248,8 @@ void Sub::do_nav_wp(const AP_Mission::Mission_Command& cmd)
     loiter_time_max = cmd.p1;
 
     // Set wp navigation target
-    auto_wp_start(target_loc);
+    // auto_wp_start(target_loc);
+    nonlin_set_destination(target_loc);
 }
 
 // do_surface - initiate surface procedure
@@ -418,8 +423,12 @@ void Sub::do_guided_limits(const AP_Mission::Mission_Command& cmd)
 // verify_nav_wp - check if we have reached the next way point
 bool Sub::verify_nav_wp(const AP_Mission::Mission_Command& cmd)
 {
+   
     // check if we have reached the waypoint
-    if (!wp_nav.reached_wp_destination()) {
+    // if (!wp_nav.reached_wp_destination()) {
+    //     return false;
+    // }
+    if (!nonlin_control.reached_wp_destination()) {
         return false;
     }
 
@@ -627,6 +636,10 @@ bool Sub::do_guided(const AP_Mission::Mission_Command& cmd)
     if (control_mode != GUIDED && !(control_mode == AUTO && auto_mode == Auto_NavGuided)) {
         return false;
     }
+    // // only process guided waypoint if we are in guided mode or NONLIN mode
+    // if (control_mode != NONLIN && control_mode != GUIDED && !(control_mode == AUTO && auto_mode == Auto_NavGuided)) {
+    //     return false;
+    // }
 
     // switch to handle different commands
     switch (cmd.id) {
@@ -634,6 +647,8 @@ bool Sub::do_guided(const AP_Mission::Mission_Command& cmd)
     case MAV_CMD_NAV_WAYPOINT: {
         // set wp_nav's destination
         return guided_set_destination(cmd.content.location);
+        //  // set nonlin's destination
+        // return nonlin_set_destination(cmd.content.location);
     }
 
     case MAV_CMD_CONDITION_YAW:

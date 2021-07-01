@@ -501,6 +501,8 @@ private:
 
     bool nonlin_init(void);
     void nonlin_run();
+    bool nonlin_set_destination(const Location& dest_loc);
+    bool nonlin_set_destination(const Vector3f& destination);
 
     bool poshold_init(void);
     void poshold_run();

@@ -11,6 +11,7 @@
 // auto_init - initialise auto controller
 bool Sub::auto_init()
 {
+    
     if (!position_ok() || mission.num_commands() < 2) {
         return false;
     }

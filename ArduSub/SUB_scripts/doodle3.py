@@ -329,9 +329,11 @@ change_mode(myDrone, 'STABILIZE')
 #
 print("Creating mission (for current location)... # of WP:")
 wpWizard.clear()
-wpWizard.load('../mission_grid1.txt')
+print(wpWizard.count())
+wpWizard.load('mission_grid1.txt')
 numWP = wpWizard.count()
 print(wpWizard.count())
+
 #
 #
 # print("Starting mission")
@@ -345,14 +347,14 @@ change_mode(myDrone, 'AUTO')
 file = open("log.txt","a")
 file.truncate(0)
 #
-while True:
-    # travel_updates()
-    logData(myDrone,file,time_start)
-    nextwaypoint=vehicle.commands.next
+# while True:
+#     # travel_updates()
+#     logData(myDrone,file,time_start)
+#     nextwaypoint=vehicle.commands.next
 
-    if nextwaypoint==10: #Dummy waypoint - as soon as we reach waypoint 4 this is true and we exit.
-        print("Final waypoint reached!")
-        break;
+#     if nextwaypoint==10: #Dummy waypoint - as soon as we reach waypoint 4 this is true and we exit.
+#         print("Final waypoint reached!")
+#         break;
 
 # vehicle.groundspeed = 15
 # vehicle.mode = VehicleMode("CIRCLE")

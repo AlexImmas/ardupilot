@@ -1,6 +1,6 @@
 #include <eigen-3.3.9/Eigen/Dense>
 //using namespace Eigen;
-
+#include <math.h>       /* atan2 */
 #include "AC_NonLinearControl.h"
 
 // table of user settable parameters
@@ -134,10 +134,10 @@ void AC_NonLinearControl::update_state()
 
 void AC_NonLinearControl::update_nonlin_control()
 {
+
       // Update transformation matrices
       AFLC.update_transformation_matrices(_eta, _nu);
       // Update reference position
-     
       AFLC.update_reference_model(_target);
       //  Anti windup
       AFLC.update_anti_windup(_eta);
@@ -149,6 +149,8 @@ void AC_NonLinearControl::update_nonlin_control()
       AFLC.update_control_input();
       // return control inputs
       _tau = AFLC.get_control_input();
+      // log data after AFLC iteration
+      AFLC.logdata();
 
 }
 
@@ -168,11 +170,63 @@ void AC_NonLinearControl::update_output()
 
 }
 
-void AC_NonLinearControl::update_target()
+bool AC_NonLinearControl::update_target(const Vector3f& destination)
 {
+    printf("running update_target\n");
+    // Compute heading
+    float heading;
+    heading = atan2 (destination[1]-_target(1),destination[0]-_target(0));
 
+    // Set target to destination received by mavlink
+    _target(0) = destination[0];
+    _target(1) = destination[1];
+    _target(2) = destination[2];
+    //_target(3) 
+    //_target(4) 
+    _target(3) = heading;
+
+    _reached_destination = false;
+
+    return true;
 }
 
+bool AC_NonLinearControl::update_target_loc(const Location& destination)
+{
+    Vector3f dest_neu;
+
+    // convert destination location to NEU vector 3f
+    if(!destination.get_vector_from_origin_NEU(dest_neu)) { 
+        return false;
+    };
+
+    // set target as vector from EKF origin
+    return update_target(dest_neu);
+}
+
+/// reached_destination - true when we have come within RADIUS cm of the waypoint
+bool AC_NonLinearControl::reached_wp_destination() 
+{
+    // radius
+    float radius = 1000; //distance from a waypoint in cm that, when crossed, indicates the wp has been reached
+    // get current location
+    float dist = norm(_eta(0)-_target(0), _eta(1)-_target(1), _eta(2)-_target(2));
+
+    _reached_destination = dist < radius;
+
+    printf("NONLINCONTROL\n");
+    printf("target x: %f\n", _target(0));
+    printf("target y: %f\n", _target(1));
+    printf("target z: %f\n", _target(2));
+    printf("target psi: %f\n", _target(3));
+    printf("uuv x: %f\n", _eta(0));
+    printf("uuv y: %f\n", _eta(1));
+    printf("uuv z: %f\n", _eta(2));
+    printf("uuv psi: %f\n", _eta(3));
+    printf("distance: %f\n", dist);
+    printf("reached destination: %d", _reached_destination);
+
+    return _reached_destination;
+}
 
 
 
@@ -225,4 +279,33 @@ Vector3f AC_NonLinearControl::body_to_earth(const Vector3f &v) const
 Vector3f AC_NonLinearControl::earth_to_body(const Vector3f &v) const
 {
         return _rot_mat.mul_transpose(v) ;
+}
+
+void AC_NonLinearControl::logdata(){
+
+        // log control variables
+    AP::logger().Write("NLTA", "TimeUS,targetx,targety,targetz,targetpsi", "Qffff",
+                                        AP_HAL::micros64(),
+                                        (double)_target(0),
+                                        (double)_target(1),
+                                        (double)_target(2),
+                                        (double)_target(3));
+    AP::logger().Write("NLPO", "TimeUS,etax,etay,etaz,etapsi", "Qffff",
+                                        AP_HAL::micros64(),
+                                        (double)_eta(0),
+                                        (double)_eta(1),
+                                        (double)_eta(2),
+                                        (double)_eta(3));
+     AP::logger().Write("NLIN", "TimeUS,ux,uy,uz,upsi", "Qffff",
+                                        AP_HAL::micros64(),
+                                        (double)_tau(0),
+                                        (double)_tau(1),
+                                        (double)_tau(2),
+                                        (double)_tau(3));
+    AP::logger().Write("NLVE", "TimeUS,nux,nuy,nuz,nupsi", "Qffff",
+                                        AP_HAL::micros64(),
+                                        (double)_nu(0),
+                                        (double)_nu(1),
+                                        (double)_nu(2),
+                                        (double)_nu(3));
 }

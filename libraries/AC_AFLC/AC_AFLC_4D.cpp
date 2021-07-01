@@ -238,8 +238,28 @@ Eigen::Vector4f AC_AFLC_4D::get_control_input() const
     return _u;
 }
 
+void AC_AFLC_4D::logdata(){
 
+    AP::logger().Write("NLRE", "TimeUS,etarx,etary,etarz,etarpsi", "Qffff",
+                                        AP_HAL::micros64(),
+                                        (double)_eta_r(0),
+                                        (double)_eta_r(1),
+                                        (double)_eta_r(2),
+                                        (double)_eta_r(3));
 
+    AP::logger().Write("NLPA", "TimeUS,m,m11,m22,m33,Jx,m44,d1,d2,d3,d4", "Qffffffffff",
+                                        AP_HAL::micros64(),
+                                        (double)_theta(0),
+                                        (double)_theta(1),
+                                        (double)_theta(2),
+                                        (double)_theta(3),
+                                        (double)_theta(4),
+                                        (double)_theta(5),
+                                        (double)_theta(6),
+                                        (double)_theta(7),
+                                        (double)_theta(8),
+                                        (double)_theta(9));
+}
 
 
 

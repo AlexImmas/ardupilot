@@ -1,6 +1,9 @@
 // Gneeric Adaptive Feedback Linearization class - 4 dof
 #pragma once
 
+#include <AP_HAL/HAL.h>
+#include <AP_Logger/AP_Logger.h> 
+
 #include <eigen-3.3.9/Eigen/Dense>
 //using namespace Eigen;
 
@@ -44,6 +47,9 @@ public:
 
     // Get control inpuots
     Eigen::Vector4f get_control_input() const;
+
+    // Log data
+    void logdata();
 
 protected:
 
