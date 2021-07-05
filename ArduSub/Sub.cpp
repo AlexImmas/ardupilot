@@ -35,7 +35,7 @@ Sub::Sub()
           ahrs_view(ahrs, ROTATION_NONE),
           attitude_control(ahrs_view, aparm, motors, MAIN_LOOP_SECONDS),
           pos_control(ahrs_view, inertial_nav, motors, attitude_control, MAIN_LOOP_SECONDS),
-          nonlin_control(ahrs_view, inertial_nav, motors, MAIN_LOOP_SECONDS, 50),
+          nonlin_control(ahrs_view, inertial_nav, motors, MAIN_LOOP_SECONDS, 10000.0),
           wp_nav(inertial_nav, ahrs_view, pos_control, attitude_control),
           loiter_nav(inertial_nav, ahrs_view, pos_control, attitude_control),
           circle_nav(inertial_nav, ahrs_view, pos_control),

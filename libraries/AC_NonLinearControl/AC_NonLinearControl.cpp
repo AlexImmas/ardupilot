@@ -136,7 +136,7 @@ void AC_NonLinearControl::update_nonlin_control()
 {
 
       // Update transformation matrices
-      AFLC.update_transformation_matrices(_eta, _nu);
+       AFLC.update_transformation_matrices(_eta, _nu);
       // Update reference position
       AFLC.update_reference_model(_target);
       //  Anti windup
@@ -147,6 +147,7 @@ void AC_NonLinearControl::update_nonlin_control()
       AFLC.update_parameters_law(_eta, _deta, _nu);
       // Compute control input
       AFLC.update_control_input();
+      //AFLC.update_control_input_na(_nu);
       // return control inputs
       _tau = AFLC.get_control_input();
       // log data after AFLC iteration
@@ -168,6 +169,10 @@ void AC_NonLinearControl::update_output()
     _motors.set_roll(0);
     _motors.set_yaw(_tau(3));
 
+    AP::logger().Write("DEB1", "TimeUS,tau3", "Qf",
+                                    AP_HAL::micros64(),
+                                    (double)_tau(3));
+
 }
 
 bool AC_NonLinearControl::update_target(const Vector3f& destination)
@@ -175,6 +180,7 @@ bool AC_NonLinearControl::update_target(const Vector3f& destination)
     printf("running update_target\n");
     // Compute heading
     float heading;
+    //heading = -0.5*M_PI; 
     heading = atan2 (destination[1]-_target(1),destination[0]-_target(0));
 
     // Set target to destination received by mavlink
@@ -207,11 +213,11 @@ bool AC_NonLinearControl::update_target_loc(const Location& destination)
 bool AC_NonLinearControl::reached_wp_destination() 
 {
     // radius
-    float radius = 1000; //distance from a waypoint in cm that, when crossed, indicates the wp has been reached
+    //float radius = 20; //distance from a waypoint in cm that, when crossed, indicates the wp has been reached
     // get current location
     float dist = norm(_eta(0)-_target(0), _eta(1)-_target(1), _eta(2)-_target(2));
 
-    _reached_destination = dist < radius;
+    _reached_destination = dist < WP_RADIUS;
 
     printf("NONLINCONTROL\n");
     printf("target x: %f\n", _target(0));
@@ -223,7 +229,7 @@ bool AC_NonLinearControl::reached_wp_destination()
     printf("uuv z: %f\n", _eta(2));
     printf("uuv psi: %f\n", _eta(3));
     printf("distance: %f\n", dist);
-    printf("reached destination: %d", _reached_destination);
+    printf("reached destination: %d\n", _reached_destination);
 
     return _reached_destination;
 }
@@ -302,10 +308,16 @@ void AC_NonLinearControl::logdata(){
                                         (double)_tau(1),
                                         (double)_tau(2),
                                         (double)_tau(3));
-    AP::logger().Write("NLVE", "TimeUS,nux,nuy,nuz,nupsi", "Qffff",
+    AP::logger().Write("NLNU", "TimeUS,nux,nuy,nuz,nupsi", "Qffff",
                                         AP_HAL::micros64(),
                                         (double)_nu(0),
                                         (double)_nu(1),
                                         (double)_nu(2),
                                         (double)_nu(3));
+     AP::logger().Write("NLVE", "TimeUS,detax,detay,detaz,detapsi", "Qffff",
+                                        AP_HAL::micros64(),
+                                        (double)_deta(0),
+                                        (double)_deta(1),
+                                        (double)_deta(2),
+                                        (double)_deta(3));
 }

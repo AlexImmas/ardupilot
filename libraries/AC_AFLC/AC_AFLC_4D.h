@@ -27,6 +27,7 @@ public:
 
     // Update transformation matrices
     void update_transformation_matrices(Eigen::Vector4f eta, Eigen::Vector4f nu);
+    //Eigen::Matrix4f update_transformation_matrices(Eigen::Vector4f eta, Eigen::Vector4f nu);
 
     // Update anti windup filter
     void update_anti_windup(Eigen::Vector4f eta);
@@ -39,6 +40,7 @@ public:
 
     // Compute control input
     void update_control_input();
+    void update_control_input_na(Eigen::Vector4f nu);
 
      // Get states
     Eigen::Vector4f get_ref_position() const;

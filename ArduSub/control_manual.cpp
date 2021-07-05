@@ -26,7 +26,7 @@ void Sub::manual_run()
     }
 
     motors.set_desired_spool_state(AP_Motors::DesiredSpoolState::THROTTLE_UNLIMITED);
-
+    
     motors.set_roll(channel_roll->norm_input());
     motors.set_pitch(channel_pitch->norm_input());
     motors.set_yaw(channel_yaw->norm_input() * g.acro_yaw_p / ACRO_YAW_P);

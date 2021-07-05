@@ -38,6 +38,9 @@ AC_AFLC_4D::AC_AFLC_4D(int n, float t,
 
         // Assign adpative law gain
         _gamma = _gain * Eigen::MatrixXf::Identity(10,10);
+        _gamma(4,4) = 0.01 * _gamma(4,4);
+        _gamma(5,5) = 0.01 * _gamma(5,5);
+        _gamma(9,9) = 0.01 * _gamma(9,9);
 
         // Initialize transformation matrices 
         _J  =  Eigen::Matrix4f::Identity(4,4);  
@@ -49,6 +52,7 @@ AC_AFLC_4D::AC_AFLC_4D(int n, float t,
 
         // Initialize adaptive variables
         _theta = Eigen::VectorXf::Zero(10);
+        _theta << 11.5, 5.5, 12.7, 14.57, 0.16, 0.12, 18.18, 21.66, 36.99, 1.55;
         _Phi = Eigen::MatrixXf::Zero(4,10); 
 
         // Initialize reference model matrices
@@ -125,6 +129,7 @@ void AC_AFLC_4D::update_reference_model(Eigen::Vector4f target)
 
 // Update transformation matrices
 void AC_AFLC_4D::update_transformation_matrices(Eigen::Vector4f eta, Eigen::Vector4f nu)
+//Eigen::Matrix4f AC_AFLC_4D::update_transformation_matrices(Eigen::Vector4f eta, Eigen::Vector4f nu)
 {
     _J(0,0) = cos(eta(3));
     _J(0,1) = -sin(eta(3));
@@ -135,6 +140,8 @@ void AC_AFLC_4D::update_transformation_matrices(Eigen::Vector4f eta, Eigen::Vect
     _dJ(0,1) = -cos(eta(3))*nu(3);
     _dJ(1,0) = cos(eta(3))*nu(3);
     _dJ(1,1) = -sin(eta(3))*nu(3);
+
+    //return _J;
 }
 
 // Anti windup
@@ -158,7 +165,9 @@ void AC_AFLC_4D::update_commanded_acceleration(Eigen::Vector4f eta, Eigen::Vecto
     // I-term
     _q += _dt * _Iawp.cwiseProduct(eta-_eta_r);
 
-    // Pole placement algorithm
+    // Pole placement algorithm: 
+    //_a_eta = _d2eta_r - 2 * _lambda.cwiseProduct(deta-_deta_r) - (_lambda.cwiseProduct(_lambda)).cwiseProduct(eta-_eta_r);
+
     _a_eta = _d2eta_r - 3 * _lambda.cwiseProduct(deta-_deta_r) 
                 - 3* (_lambda.cwiseProduct(_lambda)).cwiseProduct(eta-_eta_r)
                 - ((_lambda.cwiseProduct(_lambda)).cwiseProduct(_lambda)).cwiseProduct(_q);
@@ -218,6 +227,65 @@ void AC_AFLC_4D::update_control_input()
     }
 }
 
+// Compute control input
+void AC_AFLC_4D::update_control_input_na(Eigen::Vector4f nu)
+{
+
+    // Model parameters
+    float m    = 11.5;
+    float I4   = 0.16;
+    float ma11 = 5.5;
+    float ma22 = 12.7;
+    float ma33 = 14.57;
+    float Ia4  = 0.12;
+    float dx   = 18.18;
+    float dy   = 21.66;
+    float dz   = 36.99;
+    float d4   = 1.55;
+
+    // Model
+    Eigen::Matrix4f M    =  Eigen::Matrix4f::Zero(4,4);  
+    M(0,0) = m;
+    M(1,1) = m;
+    M(2,2) = m;
+    M(3,3) = I4;
+
+    Eigen::Matrix4f Ma   =  Eigen::Matrix4f::Zero(4,4);  
+    M(0,0) = ma11;
+    M(1,1) = ma22;
+    M(2,2) = ma33;
+    M(3,3) = Ia4;
+
+    Eigen::Matrix4f Ccor =  Eigen::Matrix4f::Zero(4,4);  
+    Ccor(0,1) = -m*nu(3);
+    Ccor(1,0) = m*nu(3);
+
+    Eigen::Matrix4f Ca   =  Eigen::Matrix4f::Zero(4,4);  
+    Ca(0,3) = -ma22 * nu(1);
+    Ca(1,3) = ma11 * nu(0);
+    Ca(3,0) = ma22 * nu(1);
+    Ca(3,1) = -ma11*nu(0);
+
+    Eigen::Matrix4f Dv   =  Eigen::Matrix4f::Zero(4,4);  
+    Dv(0,0) = dx *abs(nu(0));
+    Dv(1,1) = dy *abs(nu(1));
+    Dv(2,2) = dz *abs(nu(2));
+    Dv(3,3) = d4 *abs(nu(3));
+
+    // Compute thrust output
+    _u = (M+Ma) * _a_nu + (Ccor + Ca) * nu + Dv * nu;
+
+    // Thrust limitation
+    for(int i = 0; i<4; i++)
+    {
+        if(_u(i) >= _uU){
+            _u(i) = _uU;
+        } else if (_u(i) <= _uL){
+            _u(i) = _uL;
+        }
+    }
+}
+
 Eigen::Vector4f AC_AFLC_4D::get_ref_position() const
 {
     return _eta_r;
@@ -240,12 +308,19 @@ Eigen::Vector4f AC_AFLC_4D::get_control_input() const
 
 void AC_AFLC_4D::logdata(){
 
-    AP::logger().Write("NLRE", "TimeUS,etarx,etary,etarz,etarpsi", "Qffff",
+    AP::logger().Write("NLRP", "TimeUS,etarx,etary,etarz,etarpsi", "Qffff",
                                         AP_HAL::micros64(),
                                         (double)_eta_r(0),
                                         (double)_eta_r(1),
                                         (double)_eta_r(2),
                                         (double)_eta_r(3));
+
+    AP::logger().Write("NLRV", "TimeUS,detarx,detary,detarz,detarpsi", "Qffff",
+                                        AP_HAL::micros64(),
+                                        (double)_deta_r(0),
+                                        (double)_deta_r(1),
+                                        (double)_deta_r(2),
+                                        (double)_deta_r(3));
 
     AP::logger().Write("NLPA", "TimeUS,m,m11,m22,m33,Jx,m44,d1,d2,d3,d4", "Qffffffffff",
                                         AP_HAL::micros64(),
@@ -259,10 +334,33 @@ void AC_AFLC_4D::logdata(){
                                         (double)_theta(7),
                                         (double)_theta(8),
                                         (double)_theta(9));
+    AP::logger().Write("NLDT", "TimeUS,dm,dm11,dm22,dm33,dJx,dm44,dd1,dd2,dd3,dd4", "Qffffffffff",
+                                        AP_HAL::micros64(),
+                                        (double)_dtheta(0),
+                                        (double)_dtheta(1),
+                                        (double)_dtheta(2),
+                                        (double)_dtheta(3),
+                                        (double)_dtheta(4),
+                                        (double)_dtheta(5),
+                                        (double)_dtheta(6),
+                                        (double)_dtheta(7),
+                                        (double)_dtheta(8),
+                                        (double)_dtheta(9));
+    AP::logger().Write("AFLC", "TimeUS,qx,qy,qz,q4,Iawpx,Iawpy,Iawpz,Iawp4,anu1,anu2,anu3,anu4", "Qffffffffffff",
+                                    AP_HAL::micros64(),
+                                    (double)_q(0),
+                                    (double)_q(1),
+                                    (double)_q(2),
+                                    (double)_q(3),
+                                    (double)_Iawp(0),
+                                    (double)_Iawp(1),
+                                    (double)_Iawp(2),
+                                    (double)_Iawp(3),
+                                    (double)_a_nu(0),
+                                    (double)_a_nu(1),
+                                    (double)_a_nu(2),
+                                    (double)_a_nu(3));
 }
-
-
-
 
 
 

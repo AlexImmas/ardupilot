@@ -249,7 +249,13 @@ void Sub::do_nav_wp(const AP_Mission::Mission_Command& cmd)
 
     // Set wp navigation target
     // auto_wp_start(target_loc);
-    nonlin_set_destination(target_loc);
+    // nonlin_set_destination(target_loc);
+    if (control_mode == AUTO){
+        auto_wp_start(target_loc);
+    } else if(control_mode == NONLIN){
+        nonlin_set_destination(target_loc);
+    }
+
 }
 
 // do_surface - initiate surface procedure
@@ -428,8 +434,17 @@ bool Sub::verify_nav_wp(const AP_Mission::Mission_Command& cmd)
     // if (!wp_nav.reached_wp_destination()) {
     //     return false;
     // }
-    if (!nonlin_control.reached_wp_destination()) {
-        return false;
+    // if (!nonlin_control.reached_wp_destination()) {
+    //     return false;
+    // }
+    if (control_mode == AUTO){
+        if (!wp_nav.reached_wp_destination()) {
+            return false;
+        }
+    } else if(control_mode == NONLIN){
+        if (!nonlin_control.reached_wp_destination()) {
+            return false;
+        }
     }
 
     // play a tone
