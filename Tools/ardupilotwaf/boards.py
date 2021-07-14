@@ -607,7 +607,7 @@ class chibios(Board):
             '-Wall',
             '-Wextra',
             '-Wno-sign-compare',
-            '-Wfloat-equal',
+            #'-Wfloat-equal',  -> 7/14: Commented out to avoid error with eigen3
             '-Wpointer-arith',
             '-Wmissing-declarations',
             '-Wno-unused-parameter',

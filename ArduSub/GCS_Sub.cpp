@@ -1,5 +1,5 @@
+#define ALLOW_DOUBLE_MATH_FUNCTIONS
 #include "GCS_Sub.h"
-
 #include "Sub.h"
 
 uint8_t GCS_Sub::sysid_this_mav() const

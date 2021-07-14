@@ -24,7 +24,7 @@
 #include <cmath>
 #include <stdio.h>
 #include <stdarg.h>
-
+#define ALLOW_DOUBLE_MATH_FUNCTIONS
 #include <AP_HAL/AP_HAL.h>
 
 // Common dependencies

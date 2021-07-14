@@ -5,7 +5,8 @@
 
 
 //#include <AP_Common/AP_Common.h>      
-#include <AP_HAL/HAL.h>
+//#define ALLOW_DOUBLE_MATH_FUNCTIONS
+//#include <AP_HAL/HAL.h>
 #include <AP_Logger/AP_Logger.h>         
 #include <AP_Param/AP_Param.h>
 //#include <AP_Vehicle/AP_Vehicle.h>              // common vehicle parameters
@@ -14,10 +15,14 @@
 //#include <AP_Motors/AP_MotorsMulticopter.h>
 #include <AP_InertialNav/AP_InertialNav.h>      // Inertial Navigation library
 #include <AP_Common/Location.h>
-
-#include <eigen-3.3.9/Eigen/Dense>
+#include <stdio.h>
+// #pragma push_macro("_GLIBCXX_USE_C99_STDIO")
+// #undef _GLIBCXX_USE_C99_STDIO
+// //#include <eigen-3.3.9/Eigen/Core>
+//#include <eigen-3.3.9/Eigen/Dense>
+// #pragma pop_macro("_GLIBCXX_USE_C99_STDIO")
 //using namespace Eigen;
-#include <AC_AFLC/AC_AFLC_4D.h>
+#include <AC_AFLC/AC_AFLC.h>
 
 
 // Controller parameters (used in constructor)
@@ -94,7 +99,7 @@ protected:
 
     // Parameters
     float       _dt;                    // time difference (in seconds) between calls from the main program
-    int         _N;                      // Model dof
+    int         _n;                      // Model dof
     float       _u1;                    // Max control input (for scaling)
 
     // Variables

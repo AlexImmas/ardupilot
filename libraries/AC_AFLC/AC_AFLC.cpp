@@ -1,13 +1,20 @@
 // Generic Reference Model Class
+#define ALLOW_DOUBLE_MATH_FUNCTIONS
+#include "AC_AFLC.h"
 #include <iostream>
-#include <math.h>    
-#include <eigen-3.3.9/Eigen/Dense>
-#include <eigen-3.3.9/Eigen/LU>
-#include <eigen-3.3.9/unsupported/Eigen/MatrixFunctions>
 using namespace std;
+#include <math.h>   
+//#pragma push_macro("_GLIBCXX_USE_C99_STDIO")
+//#undef _GLIBCXX_USE_C99_STDIO 
+//#include <eigen-3.3.9/Eigen/Core>
+// #include <eigen-3.3.9/Eigen/Dense>
+// #include <eigen-3.3.9/Eigen/LU>
+// #include <eigen-3.3.9/unsupported/Eigen/MatrixFunctions>
+//#pragma pop_macro("_GLIBCXX_USE_C99_STDIO")
+
 //using namespace Eigen;
 
-#include "AC_AFLC_4D.h"
+
 
 AC_AFLC_4D::AC_AFLC_4D(int n, float t, 
     float b1, float b2, float b3, float b4, 
@@ -15,7 +22,7 @@ AC_AFLC_4D::AC_AFLC_4D(int n, float t,
     float u1, float u2, 
     float c11, float c12, float c13, float c14, 
     float g)
-    : _N(n),
+    : _n(n),
       _dt(t),
       _beta1(b1), _beta2(b2), _beta3(b3), _beta4(b4),
       _lambda1(l1), _lambda2(l2), _lambda3(l3), _lambda4(l4), 
@@ -29,10 +36,10 @@ AC_AFLC_4D::AC_AFLC_4D(int n, float t,
     {
         // Assign reference model bandwitch
         _beta << _beta1, _beta2, _beta3, _beta4;
-
+        
         // Assign reference model bandwitch
         _lambda << _lambda1, _lambda2, _lambda3, _lambda4;
-
+      
         // Assign adpater law paramenter
         _c1 << _c11, _c12, _c13, _c14;
 
@@ -53,11 +60,12 @@ AC_AFLC_4D::AC_AFLC_4D(int n, float t,
         // Initialize adaptive variables
         _theta = Eigen::VectorXf::Zero(10);
         _theta << 11.5, 5.5, 12.7, 14.57, 0.16, 0.12, 18.18, 21.66, 36.99, 1.55;
+        //_theta = Eigen::Vector10f(11.5, 5.5, 12.7, 14.57, 0.16, 0.12, 18.18, 21.66, 36.99, 1.55);
         _Phi = Eigen::MatrixXf::Zero(4,10); 
 
         // Initialize reference model matrices
         _A = Eigen::MatrixXf::Zero(12,12);
-        _B = Eigen::MatrixXf::Zero(12,4);
+        _Br = Eigen::MatrixXf::Zero(12,4);
         //MatrixXf _A(12,12);           
         //MatrixXf _B(12,4); 
     }
@@ -69,37 +77,37 @@ void AC_AFLC_4D::init_reference_model(Eigen::Vector4f eta_r0, Eigen::Vector4f de
 
     //// Compute matrices for continuous-time model
     // Matrix Ac
-    Eigen::MatrixXf Ac(3*_N,3*_N);      
+    Eigen::MatrixXf Ac(3*_n,3*_n);      
     
     // Upper block of rows
-    Ac.block(0,0,_N,_N) = Eigen::MatrixXf::Zero(_N,_N); 
-    Ac.block(0,_N,_N,_N) = Eigen::MatrixXf::Identity(_N,_N);
-    Ac.block(0,2*_N,_N,_N) = Eigen::MatrixXf::Zero(_N,_N);
+    Ac.block(0,0,_n,_n) = Eigen::MatrixXf::Zero(_n,_n); 
+    Ac.block(0,_n,_n,_n) = Eigen::MatrixXf::Identity(_n,_n);
+    Ac.block(0,2*_n,_n,_n) = Eigen::MatrixXf::Zero(_n,_n);
 
     // Medium block of rows
-    Ac.block(_N,0,_N,_N) = Eigen::MatrixXf::Zero(_N,_N);
-    Ac.block(_N,_N,_N,_N) = Eigen::MatrixXf::Zero(_N,_N);
-    Ac.block(_N,2*_N,_N,_N) = Eigen::MatrixXf::Identity(_N,_N);
+    Ac.block(_n,0,_n,_n) = Eigen::MatrixXf::Zero(_n,_n);
+    Ac.block(_n,_n,_n,_n) = Eigen::MatrixXf::Zero(_n,_n);
+    Ac.block(_n,2*_n,_n,_n) = Eigen::MatrixXf::Identity(_n,_n);
 
     // Lower block of rows
-    Ac.block(2*_N,0,_N,_N).diagonal() = - (_beta.cwiseProduct(_beta)).cwiseProduct(_beta);
-    Ac.block(2*_N,_N,_N,_N).diagonal() = - 3 * _beta.cwiseProduct(_beta);
-    Ac.block(2*_N,2*_N,_N,_N).diagonal() = -3 * _beta;
+    Ac.block(2*_n,0,_n,_n).diagonal() = - (_beta.cwiseProduct(_beta)).cwiseProduct(_beta);
+    Ac.block(2*_n,_n,_n,_n).diagonal() = - 3 * _beta.cwiseProduct(_beta);
+    Ac.block(2*_n,2*_n,_n,_n).diagonal() = -3 * _beta;
 
     // Matrix Bc
-    Eigen::MatrixXf Bc(3*_N,_N); 
-    Bc.block(0,0,_N,_N) = Eigen::MatrixXf::Zero(_N,_N);
-    Bc.block(_N,0,_N,_N) = Eigen::MatrixXf::Zero(_N,_N);
-    Bc.block(2*_N,0,_N,_N).diagonal() = (_beta.cwiseProduct(_beta)).cwiseProduct(_beta);
+    Eigen::MatrixXf Bc(3*_n,_n); 
+    Bc.block(0,0,_n,_n) = Eigen::MatrixXf::Zero(_n,_n);
+    Bc.block(_n,0,_n,_n) = Eigen::MatrixXf::Zero(_n,_n);
+    Bc.block(2*_n,0,_n,_n).diagonal() = (_beta.cwiseProduct(_beta)).cwiseProduct(_beta);
 
     //// Compute matrices for discrete-time model
     // Matrix A
-    Eigen::MatrixXf Acdt(3*_N,3*_N);  
+    Eigen::MatrixXf Acdt(3*_n,3*_n);  
     Acdt = _dt * Ac;
-    _A = Acdt.exp();
+    _A = Acdt;//.exp();
 
     // MAtrix B
-    _B = Ac.inverse()*(_A-Eigen::MatrixXf::Identity(3*_N,3*_N))*Bc;
+    _Br = Ac.inverse()*(_A-Eigen::MatrixXf::Identity(3*_n,3*_n))*Bc;
 
     //// Initiazlie reference model states
     _eta_r = eta_r0;
@@ -113,18 +121,18 @@ void AC_AFLC_4D::init_reference_model(Eigen::Vector4f eta_r0, Eigen::Vector4f de
 void AC_AFLC_4D::update_reference_model(Eigen::Vector4f target)
 {
     // Delare state-space vector
-    Eigen::VectorXf y(3*_N);
-    y.head(_N) = _eta_r;
-    y.segment(_N,_N) = _deta_r;
-    y.tail(_N) = _d2eta_r;
+    Eigen::VectorXf y(3*_n);
+    y.head(_n) = _eta_r;
+    y.segment(_n,_n) = _deta_r;
+    y.tail(_n) = _d2eta_r;
 
     // Update state-space vector
-    y = _A * y + _B * target;
+    y = _A * y + _Br * target;
 
     // Assign update to parameters objects
-    _eta_r = y.head(_N);
-    _deta_r = y.segment(_N,_N);
-    _d2eta_r = y.tail(_N);
+    _eta_r = y.head(_n);
+    _deta_r = y.segment(_n,_n);
+    _d2eta_r = y.tail(_n);
 }
 
 // Update transformation matrices

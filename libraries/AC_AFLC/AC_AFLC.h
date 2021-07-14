@@ -1,12 +1,18 @@
-// Gneeric Adaptive Feedback Linearization class - 4 dof
+// Generic Adaptive Feedback Linearization class - 4 dof
 #pragma once
 
 #include <AP_HAL/HAL.h>
 #include <AP_Logger/AP_Logger.h> 
+#include <stdio.h>
 
+//#pragma push_macro("_GLIBCXX_USE_C99_STDIO")
+//#undef _GLIBCXX_USE_C99_STDIO
+//#include <eigen-3.3.9/Eigen/Core>
 #include <eigen-3.3.9/Eigen/Dense>
+#include <eigen-3.3.9/Eigen/LU>
+#include <eigen-3.3.9/unsupported/Eigen/MatrixFunctions>
+//#pragma pop_macro("_GLIBCXX_USE_C99_STDIO")
 //using namespace Eigen;
-
 
 class AC_AFLC_4D {
 public:
@@ -56,7 +62,7 @@ public:
 protected:
 
      // Control Parameters
-    int _N;
+    int _n;
     float _dt;        // timesteps in second
     float _lambda1, _lambda2, _lambda3, _lambda4;
     Eigen::Vector4f _lambda; // Control gains
@@ -93,7 +99,7 @@ protected:
 
     // Reference model Matrices
     Eigen::MatrixXf _A;           
-    Eigen::MatrixXf _B; 
+    Eigen::MatrixXf _Br; 
 
     // Reference model States       
     Eigen::Vector4f _eta_r;           // reference position

@@ -1,5 +1,4 @@
 // Jacob Walser: jacob@bluerobotics.com
-
 #include "Sub.h"
 
 // counter to verify contact with bottom

@@ -1,7 +1,13 @@
-#include <eigen-3.3.9/Eigen/Dense>
+#define ALLOW_DOUBLE_MATH_FUNCTIONS
+#include "AC_NonLinearControl.h"
+// #pragma push_macro("_GLIBCXX_USE_C99_STDIO")
+// #undef _GLIBCXX_USE_C99_STDIO
+//#include <eigen-3.3.9/Eigen/Core>
+//#include <eigen-3.3.9/Eigen/Dense>
+//#pragma pop_macro("_GLIBCXX_USE_C99_STDIO")
 //using namespace Eigen;
 #include <math.h>       /* atan2 */
-#include "AC_NonLinearControl.h"
+
 
 // table of user settable parameters
 const AP_Param::GroupInfo AC_NonLinearControl::var_info[] = {
@@ -15,7 +21,7 @@ const AP_Param::GroupInfo AC_NonLinearControl::var_info[] = {
 AC_NonLinearControl::AC_NonLinearControl(AP_AHRS_View & ahrs, const AP_InertialNav& inav,
                                 AP_Motors & motors, float dt, float u1) :
         _dt(dt),
-        _N(N),
+        _n(N),
         _u1(u1),
         AFLC(N, dt, BETA1, BETA2, BETA3, BETA4, LAMBDA1, LAMBDA2, LAMBDA3, LAMBDA4,
                  UMAX, UMIN, C1, C2, C3, C4, GAMMA),
@@ -177,7 +183,7 @@ void AC_NonLinearControl::update_output()
 
 bool AC_NonLinearControl::update_target(const Vector3f& destination)
 {
-    printf("running update_target\n");
+    //printf("running update_target\n");
     // Compute heading
     float heading;
     //heading = -0.5*M_PI; 
@@ -219,17 +225,17 @@ bool AC_NonLinearControl::reached_wp_destination()
 
     _reached_destination = dist < WP_RADIUS;
 
-    printf("NONLINCONTROL\n");
-    printf("target x: %f\n", _target(0));
-    printf("target y: %f\n", _target(1));
-    printf("target z: %f\n", _target(2));
-    printf("target psi: %f\n", _target(3));
-    printf("uuv x: %f\n", _eta(0));
-    printf("uuv y: %f\n", _eta(1));
-    printf("uuv z: %f\n", _eta(2));
-    printf("uuv psi: %f\n", _eta(3));
-    printf("distance: %f\n", dist);
-    printf("reached destination: %d\n", _reached_destination);
+    // printf("NONLINCONTROL\n");
+    // printf("target x: %f\n", _target(0));
+    // printf("target y: %f\n", _target(1));
+    // printf("target z: %f\n", _target(2));
+    // printf("target psi: %f\n", _target(3));
+    // printf("uuv x: %f\n", _eta(0));
+    // printf("uuv y: %f\n", _eta(1));
+    // printf("uuv z: %f\n", _eta(2));
+    // printf("uuv psi: %f\n", _eta(3));
+    // printf("distance: %f\n", dist);
+    // printf("reached destination: %d\n", _reached_destination);
 
     return _reached_destination;
 }
