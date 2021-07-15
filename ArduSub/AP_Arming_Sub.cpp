@@ -1,3 +1,4 @@
+#define ALLOW_DOUBLE_MATH_FUNCTIONS
 #include "AP_Arming_Sub.h"
 #include "Sub.h"
 

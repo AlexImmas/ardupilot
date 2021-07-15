@@ -85,6 +85,7 @@ public:
         k_param_NavEKF2, // EKF2
         k_param_attitude_control, // Attitude Control
         k_param_pos_control, // Position Control
+        k_param_nonlin_control, // Nonlinear Control
         k_param_wp_nav, // Waypoint navigation
         k_param_mission, // Mission library
         k_param_fence, // Fence Library

@@ -24,7 +24,7 @@
 #include <cmath>
 #include <stdio.h>
 #include <stdarg.h>
-
+#define ALLOW_DOUBLE_MATH_FUNCTIONS
 #include <AP_HAL/AP_HAL.h>
 
 // Common dependencies
@@ -54,6 +54,7 @@
 #include <AC_PID/AC_PID_2D.h>          // PID library (2-axis)
 #include <AC_AttitudeControl/AC_AttitudeControl_Sub.h> // Attitude control library
 #include <AC_AttitudeControl/AC_PosControl_Sub.h>      // Position control library
+#include <AC_NonLinearControl/AC_NonLinearControl.h>   // Nonlinear control library
 #include <AP_Motors/AP_Motors.h>          // AP Motors library
 #include <AP_RangeFinder/AP_RangeFinder.h>     // Range finder library
 #include <Filter/Filter.h>             // Filter library
@@ -395,6 +396,8 @@ private:
 
     AC_PosControl_Sub pos_control;
 
+    AC_NonLinearControl nonlin_control;
+
     AC_WPNav wp_nav;
     AC_Loiter loiter_nav;
     AC_Circle circle_nav;
@@ -562,6 +565,11 @@ private:
     void guided_limit_set(uint32_t timeout_ms, float alt_min_cm, float alt_max_cm, float horiz_max_cm);
     void guided_limit_init_time_and_pos();
     bool guided_limit_check();
+
+    bool nonlin_init(void);
+    void nonlin_run();
+    bool nonlin_set_destination(const Location& dest_loc);
+    bool nonlin_set_destination(const Vector3f& destination);
 
     bool poshold_init(void);
     void poshold_run();

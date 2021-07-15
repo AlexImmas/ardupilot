@@ -103,8 +103,8 @@ void Sub::fast_loop()
     // update INS immediately to get current gyro data populated
     ins.update();
 
-    //don't run rate controller in manual or motordetection modes
-    if (control_mode != MANUAL && control_mode != MOTOR_DETECT) {
+    //don't run rate controller in manual or motordetection modes or nonlin mode
+    if (control_mode != MANUAL && control_mode != MOTOR_DETECT && control_mode != NONLIN) {
         // run low level rate controllers that only require IMU data
         attitude_control.rate_controller_run();
     }
