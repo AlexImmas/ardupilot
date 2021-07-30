@@ -35,7 +35,7 @@ AC_AFLC_4D::AC_AFLC_4D(int n, float t,
       // _d2eta_r(Vector4f::Zero(4))
     {
         // Assign reference model bandwitch
-        beta << _beta1, _beta2, _beta3, _beta4;
+        _beta << _beta1, _beta2, _beta3, _beta4;
         //_beta = Eigen::Vector4f(_beta1, _beta2, _beta3, _beta4);
 
         // Assign reference model bandwitch

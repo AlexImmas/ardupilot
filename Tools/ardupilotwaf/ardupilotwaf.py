@@ -206,6 +206,9 @@ def ap_common_vehicle_libraries(bld):
         libraries += [
             'AC_Fence',
             'AC_AttitudeControl',
+            'eigen-3.3.9',
+            'AC_NonLinearControl',
+            'AC_AFLC'
         ]
 
     return libraries
