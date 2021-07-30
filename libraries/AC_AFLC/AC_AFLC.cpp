@@ -35,13 +35,16 @@ AC_AFLC_4D::AC_AFLC_4D(int n, float t,
       // _d2eta_r(Vector4f::Zero(4))
     {
         // Assign reference model bandwitch
-        _beta << _beta1, _beta2, _beta3, _beta4;
-        
+        beta << _beta1, _beta2, _beta3, _beta4;
+        //_beta = Eigen::Vector4f(_beta1, _beta2, _beta3, _beta4);
+
         // Assign reference model bandwitch
         _lambda << _lambda1, _lambda2, _lambda3, _lambda4;
-      
+        //_lambda = Eigen::Vector4f(_lambda1, _lambda2, _lambda3, _lambda4);
+
         // Assign adpater law paramenter
         _c1 << _c11, _c12, _c13, _c14;
+        //_c1 = Eigen::Vector4f(_c11, _c12, _c13, _c14);
 
         // Assign adpative law gain
         _gamma = _gain * Eigen::MatrixXf::Identity(10,10);

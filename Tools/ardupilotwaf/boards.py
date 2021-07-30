@@ -109,7 +109,7 @@ class Board:
             '-Wformat',
             '-Wpointer-arith',
             '-Wcast-align',
-            '-Wundef',
+            #'-Wundef', -> 7/30: Commented out to avoid warning in Pixhawk compilation
             '-Wno-missing-field-initializers',
             '-Wno-unused-parameter',
             '-Wno-redundant-decls',
@@ -169,7 +169,7 @@ class Board:
             '-Wformat',
             '-Wpointer-arith',
             '-Wcast-align',
-            '-Wundef',
+            #'-Wundef', -> 7/30: Commented out to avoid warning in Pixhawk compilation
             '-Wno-unused-parameter',
             '-Wno-missing-field-initializers',
             '-Wno-reorder',
@@ -450,7 +450,7 @@ class chibios(Board):
             '-Wall',
             '-Wextra',
             '-Wno-sign-compare',
-            '-Wfloat-equal',
+            #'-Wfloat-equal',  -> 7/14: Commented out to avoid error with eigen3
             '-Wpointer-arith',
             '-Wmissing-declarations',
             '-Wno-unused-parameter',
