@@ -19,6 +19,7 @@
 
 #include <AP_BattMonitor/AP_BattMonitor.h>
 #include <AP_HAL/AP_HAL.h>
+#include <AP_Logger/AP_Logger.h> 
 #include "AP_Motors6DOF.h"
 
 extern const AP_HAL::HAL& hal;
@@ -409,6 +410,20 @@ void AP_Motors6DOF::output_armed_stabilizing_vectored()
     forward_thrust = _forward_in;
     lateral_thrust = _lateral_in;
 
+    AP::logger().Write("DEB2", "TimeUS,yaw_in", "Qf",
+                                AP_HAL::micros64(),
+                                (double)_yaw_in);
+
+    AP::logger().Write("THVE", "TimeUS,Fx,Fy,Fz,Mx,My,Mz", "Qffffff",
+                                AP_HAL::micros64(),
+                                (double)forward_thrust,
+                                (double)lateral_thrust,
+                                (double)throttle_thrust,
+                                (double)roll_thrust,
+                                (double)pitch_thrust,
+                                (double)yaw_thrust
+                                );
+
     float rpy_out[AP_MOTORS_MAX_NUM_MOTORS]; // buffer so we don't have to multiply coefficients multiple times.
     float linear_out[AP_MOTORS_MAX_NUM_MOTORS]; // 3 linear DOF mix for each motor
 
@@ -473,6 +488,17 @@ void AP_Motors6DOF::output_armed_stabilizing_vectored()
             _thrust_rpyt_out[i] = constrain_float(_motor_reverse[i]*(rpy_out[i] + linear_out[i]), -1.0f, 1.0f);
         }
     }
+
+    AP::logger().Write("THMO", "TimeUS,M1,M2,M3,M4,M5,M6", "Qffffff",
+                            AP_HAL::micros64(),
+                            (double)_thrust_rpyt_out[0],
+                            (double)_thrust_rpyt_out[1],
+                            (double)_thrust_rpyt_out[2],
+                            (double)_thrust_rpyt_out[3],
+                            (double)_thrust_rpyt_out[4],
+                            (double)_thrust_rpyt_out[5]
+                            );
+
 }
 
 // Band Aid fix for motor normalization issues.

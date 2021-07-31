@@ -128,7 +128,7 @@ bool Sub::start_command(const AP_Mission::Mission_Command& cmd)
 // called by mission library in mission.update()
 bool Sub::verify_command_callback(const AP_Mission::Mission_Command& cmd)
 {
-    if (control_mode == AUTO) {
+    if (control_mode == AUTO || control_mode == NONLIN) {
         bool cmd_complete = verify_command(cmd);
 
         // send message to GCS
@@ -251,7 +251,13 @@ void Sub::do_nav_wp(const AP_Mission::Mission_Command& cmd)
     loiter_time_max = cmd.p1;
 
     // Set wp navigation target
-    auto_wp_start(target_loc);
+    // auto_wp_start(target_loc);
+    // nonlin_set_destination(target_loc);
+    if (control_mode == AUTO){
+        auto_wp_start(target_loc);
+    } else if(control_mode == NONLIN){
+        nonlin_set_destination(target_loc);
+    }
 
     // if no delay set the waypoint as "fast"
     if (loiter_time_max == 0) {
@@ -504,8 +510,20 @@ void Sub::do_guided_limits(const AP_Mission::Mission_Command& cmd)
 bool Sub::verify_nav_wp(const AP_Mission::Mission_Command& cmd)
 {
     // check if we have reached the waypoint
-    if (!wp_nav.reached_wp_destination()) {
-        return false;
+    // if (!wp_nav.reached_wp_destination()) {
+    //     return false;
+    // }
+    // if (!nonlin_control.reached_wp_destination()) {
+    //     return false;
+    // }
+    if (control_mode == AUTO){
+        if (!wp_nav.reached_wp_destination()) {
+            return false;
+        }
+    } else if(control_mode == NONLIN){
+        if (!nonlin_control.reached_wp_destination()) {
+            return false;
+        }
     }
 
     // play a tone
