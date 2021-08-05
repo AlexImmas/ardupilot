@@ -14,9 +14,9 @@
 #include <cfloat>
 #include <list>
 
-#include <Eigen/Core>
-#include <Eigen/LU>
-#include <Eigen/Eigenvalues>
+#include <eigen-3.3.9/Eigen/Core>
+#include <eigen-3.3.9/Eigen/LU>
+#include <eigen-3.3.9/Eigen/Eigenvalues>
 
 /**
   * \defgroup MatrixFunctions_Module Matrix functions module

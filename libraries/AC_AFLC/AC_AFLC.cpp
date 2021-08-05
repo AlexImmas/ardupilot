@@ -5,9 +5,8 @@
 
 //#define ALLOW_DOUBLE_MATH_FUNCTIONS
 #include "AC_AFLC.h"
-// #include <iostream>
-// using namespace std;
-// #include <math.h>   
+//#include <iostream>
+#include <math.h>   
 
 
 //#pragma push_macro("_GLIBCXX_USE_C99_STDIO")
@@ -55,9 +54,9 @@ AC_AFLC::AC_AFLC(int n, float t,
 
         // Assign adpative law gain
         _gamma = _gain * Eigen::MatrixXf::Identity(10,10);
-        _gamma(4,4) = 0.01 * _gamma(4,4);
-        _gamma(5,5) = 0.01 * _gamma(5,5);
-        _gamma(9,9) = 0.01 * _gamma(9,9);
+        _gamma(4,4) = 0.005 * _gamma(4,4); // 0.01 
+        _gamma(5,5) = 0.005 * _gamma(5,5); // 0.01
+        _gamma(9,9) = 0.005 * _gamma(9,9); // 0.01
 
         // Initialize transformation matrices 
         _J  =  Eigen::Matrix4f::Identity(4,4);  
@@ -116,7 +115,7 @@ void AC_AFLC::init_reference_model(Eigen::Vector4f eta_r0, Eigen::Vector4f deta_
     // Matrix A
     Eigen::MatrixXf Acdt(3*_n,3*_n);  
     Acdt = _dt * Ac;
-    _A = Acdt;//.exp();
+    _A = Acdt.exp();
 
     // MAtrix B
     _Br = Ac.inverse()*(_A-Eigen::MatrixXf::Identity(3*_n,3*_n))*Bc;
@@ -125,6 +124,12 @@ void AC_AFLC::init_reference_model(Eigen::Vector4f eta_r0, Eigen::Vector4f deta_
     _eta_r = eta_r0;
     _deta_r = deta_r0;
     _d2eta_r = Eigen::Vector4f::Zero(4);
+
+    // std::cout << "Ac:\n " << Ac << "\n";
+    // std::cout << "Ac size: " << Ac.rows() << "x" << Ac.cols() << "\n";
+    // std::cout << "Bc:\n " << Bc << "\n";
+    // std::cout << "Ad:\n " << _A << "\n";
+    // std::cout << "Bd:\n " << _Br << "\n";
 }
 
 void AC_AFLC::update_reference_model(Eigen::Vector4f target)
@@ -217,6 +222,9 @@ void AC_AFLC::update_parameters_law(Eigen::Vector4f eta, Eigen::Vector4f deta, E
     _Phi(3,5) = _a_nu(3);
     _Phi(3,9) = abs(nu(3))*nu(3);
 
+    // std::cout << "a_nu:\n " << _a_nu << "\n";
+    // std::cout << "nu:\n " << nu << "\n";
+
     // change of variables
     _s = (deta - _deta_r) + _c1.cwiseProduct(eta-_eta_r);
 
@@ -232,6 +240,11 @@ void AC_AFLC::update_control_input()
 
     // Compute control input
     _u = _Phi * _theta;
+
+    // std::cout << "theta:\n " << _theta << "\n";
+    // std::cout << "dtheta:\n " << _dtheta << "\n";
+    // std::cout << "Phi:\n " << _Phi << "\n";
+
 
     // Thrust limitation
     for(int i = 0; i<4; i++)

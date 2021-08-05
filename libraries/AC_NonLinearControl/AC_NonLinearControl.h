@@ -34,13 +34,13 @@
 #define LAMBDA1               1.0f            // Pole placement gain in surge
 #define LAMBDA2               1.0f          // Pole placement gain in sway
 #define LAMBDA3               1.4f            // Pole placement gain in heave
-#define LAMBDA4               10.0f //0.8f // //0.5f //4.0f //             // Pole placement gain in yaw
-#define UMAX                  10000.0f // //500.0f //50.0f            // Maximum control authority    
-#define UMIN                  -10000.0f // //-500.0f //-50.0f           // Minimum control authority
+#define LAMBDA4               10.0f              // Pole placement gain in yaw
+#define UMAX                  100000.0f //10000.0f // //500.0f //50.0f            // Maximum control authority    
+#define UMIN                  -100000.0f //-10000.0f // //-500.0f //-50.0f           // Minimum control authority
 #define C1                    3.0f              // Adaptive law parameter in surge
 #define C2                    3.0f              // Adaptive law parameter in sway
 #define C3                    1.0f             // Adaptive law parameter in heave
-#define C4                    1.0f //4.0f //1.0f             // Adaptive law parameter in yaw
+#define C4                    0.5f //1.0f           // Adaptive law parameter in yaw
 #define M                     10               // number of adaptive parameters
 #define GAMMA                 100000.0f //10000.0f//500000.0f //10.0f //           // adaptive law gain
 #define WP_RADIUS             20.0f      // default waypoint radius in cm

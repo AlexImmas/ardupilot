@@ -11,7 +11,7 @@
 //#include <eigen-3.3.9/Eigen/Core>
 #include <eigen-3.3.9/Eigen/Dense>
 #include <eigen-3.3.9/Eigen/LU>
-//#include <eigen-3.3.9/unsupported/Eigen/MatrixFunctions>
+#include <eigen-3.3.9/unsupported/Eigen/MatrixFunctions>
 //#pragma pop_macro("_GLIBCXX_USE_C99_STDIO")
 //using namespace Eigen;
 

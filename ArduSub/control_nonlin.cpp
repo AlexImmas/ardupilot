@@ -18,7 +18,7 @@ bool Sub::nonlin_init()
     }
 
     // Init reference model
-    nonlin_control.init_nonlin_control();  // ADD INITIALIZATION OF ETA_R, etc.. HERE
+    nonlin_control.init_nonlin_control(); 
 
     // start/resume the mission (based on MIS_RESTART parameter)
     mission.start_or_resume();
@@ -47,9 +47,6 @@ void Sub::nonlin_run()
 
     // set motors to full range
     motors.set_desired_spool_state(AP_Motors::DesiredSpoolState::THROTTLE_UNLIMITED);
-
-    // update target point from path planner: TBD. Brute force targer point in the mean time
-    // ....
 
     // Update state
     nonlin_control.update_state();

@@ -225,17 +225,17 @@ bool AC_NonLinearControl::reached_wp_destination()
 
     _reached_destination = dist < WP_RADIUS;
 
-    // printf("NONLINCONTROL\n");
-    // printf("target x: %f\n", _target(0));
-    // printf("target y: %f\n", _target(1));
-    // printf("target z: %f\n", _target(2));
-    // printf("target psi: %f\n", _target(3));
-    // printf("uuv x: %f\n", _eta(0));
-    // printf("uuv y: %f\n", _eta(1));
-    // printf("uuv z: %f\n", _eta(2));
-    // printf("uuv psi: %f\n", _eta(3));
-    // printf("distance: %f\n", dist);
-    // printf("reached destination: %d\n", _reached_destination);
+    printf("NONLINCONTROL\n");
+    printf("target x: %f\n", _target(0));
+    printf("target y: %f\n", _target(1));
+    printf("target z: %f\n", _target(2));
+    printf("target psi: %f\n", _target(3));
+    printf("uuv x: %f\n", _eta(0));
+    printf("uuv y: %f\n", _eta(1));
+    printf("uuv z: %f\n", _eta(2));
+    printf("uuv psi: %f\n", _eta(3));
+    printf("distance: %f\n", dist);
+    printf("reached destination: %d\n", _reached_destination);
 
     return _reached_destination;
 }
