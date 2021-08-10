@@ -29,18 +29,18 @@
 #define N0                    4                // Model dof
 #define BETA1                 0.1f              // Reference model bandwidth in surge
 #define BETA2                 0.1f             // Reference model bandwidth in sway
-#define BETA3                 0.08f            // Reference model bandwidth in heave
+#define BETA3                 0.15f            // Reference model bandwidth in heave
 #define BETA4                 0.4f              // Reference model bandwidth in yaw
 #define LAMBDA1               1.4f //1.0f            // Pole placement gain in surge
 #define LAMBDA2               1.4f //1.0f          // Pole placement gain in sway
-#define LAMBDA3               1.4f            // Pole placement gain in heave
+#define LAMBDA3               1.25f            // Pole placement gain in heave
 #define LAMBDA4               10.0f              // Pole placement gain in yaw
 #define UMAX                  10000.0f // //500.0f //50.0f            // Maximum control authority    
 #define UMIN                  -10000.0f // //-500.0f //-50.0f           // Minimum control authority
 #define C1                    3.0f             // Adaptive law parameter in surge
 #define C2                    3.0f             // Adaptive law parameter in sway
 #define C3                    1.0f             // Adaptive law parameter in heave
-#define C4                    0.5f             // Adaptive law parameter in yaw
+#define C4                    1.0f             // Adaptive law parameter in yaw
 #define D1                    1.0f             // Adaptive law parameter in surge
 #define D2                    1.0f             // Adaptive law parameter in sway
 #define D3                    1.0f             // Adaptive law parameter in heave

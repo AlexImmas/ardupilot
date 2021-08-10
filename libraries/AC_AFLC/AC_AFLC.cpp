@@ -57,9 +57,9 @@ AC_AFLC::AC_AFLC(int n, float t,
 
         // Assign adpative law gain
         _gamma = _gain * Eigen::MatrixXf::Identity(10,10);
-        _gamma(4,4) = 0.005 * _gamma(4,4); // 0.01 
-        _gamma(5,5) = 0.005 * _gamma(5,5); // 0.01
-        _gamma(9,9) = 0.005 * _gamma(9,9); // 0.01
+        _gamma(4,4) = 0.005 * _gamma(4,4); 
+        _gamma(5,5) = 0.005 * _gamma(5,5); 
+        _gamma(9,9) = 0.005 * _gamma(9,9); 
 
         // Initialize transformation matrices 
         _J  =  Eigen::Matrix4f::Identity(4,4);  
