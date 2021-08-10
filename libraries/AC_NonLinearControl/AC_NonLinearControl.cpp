@@ -77,14 +77,16 @@ void AC_NonLinearControl::init_nonlin_control()
 
     // Define deta_r0
     Eigen::Vector4f deta_r0;
-    deta_r0(0) = pos_vel_n(0);
-    deta_r0(1) = pos_vel_n(1);
-    deta_r0(2) = pos_vel_n(2);
-    //deta_r0(3) = TBD
-    //deta_r0(4) = TBD
-    deta_r0(3) =  ang_vel_n(2);
+    // deta_r0(0) = pos_vel_n(0);
+    // deta_r0(1) = pos_vel_n(1);
+    // deta_r0(2) = pos_vel_n(2);
+    // //deta_r0(3) = TBD
+    // //deta_r0(4) = TBD
+    // deta_r0(3) =  ang_vel_n(2);
+    deta_r0 = Eigen::Vector4f::Zero(4); 
 
     _AFLC.init_reference_model(eta_r0, deta_r0);
+
 }
 
 void AC_NonLinearControl::update_state()

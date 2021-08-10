@@ -5,9 +5,9 @@
 
 //#define ALLOW_DOUBLE_MATH_FUNCTIONS
 #include "AC_AFLC.h"
-//#include <iostream>
 #include <math.h>   
 
+#include <iostream> // COMMENT OUT FOR PIXHAWK COMPILATION
 
 //#pragma push_macro("_GLIBCXX_USE_C99_STDIO")
 //#undef _GLIBCXX_USE_C99_STDIO 
@@ -125,11 +125,21 @@ void AC_AFLC::init_reference_model(Eigen::Vector4f eta_r0, Eigen::Vector4f deta_
     _deta_r = deta_r0;
     _d2eta_r = Eigen::Vector4f::Zero(4);
 
-    // std::cout << "Ac:\n " << Ac << "\n";
-    // std::cout << "Ac size: " << Ac.rows() << "x" << Ac.cols() << "\n";
-    // std::cout << "Bc:\n " << Bc << "\n";
-    // std::cout << "Ad:\n " << _A << "\n";
-    // std::cout << "Bd:\n " << _Br << "\n";
+//     std::cout << "Ac:\n " << Ac << "\n";
+//     std::cout << "Ac size: " << Ac.rows() << "x" << Ac.cols() << "\n";
+//     std::cout << "Bc:\n " << Bc << "\n";
+//     std::cout << "Ad:\n " << _A << "\n";
+//     std::cout << "Bd:\n " << _Br << "\n";
+    // printf("REF Model INIT\n");
+    // printf("ref x:   %f cm\n", _eta_r(0));
+    // printf("ref y:   %f cm\n", _eta_r(1));
+    // printf("ref z:   %f cm\n", _eta_r(2));
+    // printf("ref psi: %f degrees\n", _eta_r(3)*180/M_PI);
+    // printf("ref dx:   %f cm/s\n", _deta_r(0));
+    // printf("ref dy:   %f cm/s\n", _deta_r(1));
+    // printf("ref dz:   %f cm/s\n", _deta_r(2));
+    // printf("ref dpsi: %f degrees/s\n", _deta_r(3)*180/M_PI);
+
 }
 
 void AC_AFLC::update_reference_model(Eigen::Vector4f target)
@@ -147,6 +157,8 @@ void AC_AFLC::update_reference_model(Eigen::Vector4f target)
     _eta_r = y.head(_n);
     _deta_r = y.segment(_n,_n);
     _d2eta_r = y.tail(_n);
+
+    // std::cout << "ref_model target:\n " << target << "\n";
 }
 
 // Update transformation matrices
