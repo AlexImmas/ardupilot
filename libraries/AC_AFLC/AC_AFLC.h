@@ -24,6 +24,7 @@ public:
     float l1, float l2, float l3, float l4, 
     float u1, float u2, 
     float c11, float c12, float c13, float c14, 
+    float d11, float d12, float d13, float d14,
     float g);
 
     // Build reference model matrices
@@ -75,6 +76,8 @@ protected:
     // Adaptive parameters
     float _c11, _c12, _c13, _c14;
     Eigen::Vector4f _c1;
+    float _d11, _d12, _d13, _d14;
+    Eigen::Vector4f _d1;
     float _gain;
     Eigen::MatrixXf _gamma;
 

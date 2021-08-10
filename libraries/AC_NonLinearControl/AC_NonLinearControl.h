@@ -30,19 +30,23 @@
 #define BETA1                 0.1f              // Reference model bandwidth in surge
 #define BETA2                 0.1f             // Reference model bandwidth in sway
 #define BETA3                 0.08f            // Reference model bandwidth in heave
-#define BETA4                 0.4f //0.5f //2.0f //0.5f //              // Reference model bandwidth in yaw
-#define LAMBDA1               1.0f            // Pole placement gain in surge
-#define LAMBDA2               1.0f          // Pole placement gain in sway
+#define BETA4                 0.4f              // Reference model bandwidth in yaw
+#define LAMBDA1               1.4f //1.0f            // Pole placement gain in surge
+#define LAMBDA2               1.4f //1.0f          // Pole placement gain in sway
 #define LAMBDA3               1.4f            // Pole placement gain in heave
 #define LAMBDA4               10.0f              // Pole placement gain in yaw
-#define UMAX                  100000.0f //10000.0f // //500.0f //50.0f            // Maximum control authority    
-#define UMIN                  -100000.0f //-10000.0f // //-500.0f //-50.0f           // Minimum control authority
-#define C1                    3.0f              // Adaptive law parameter in surge
-#define C2                    3.0f              // Adaptive law parameter in sway
+#define UMAX                  10000.0f // //500.0f //50.0f            // Maximum control authority    
+#define UMIN                  -10000.0f // //-500.0f //-50.0f           // Minimum control authority
+#define C1                    3.0f             // Adaptive law parameter in surge
+#define C2                    3.0f             // Adaptive law parameter in sway
 #define C3                    1.0f             // Adaptive law parameter in heave
-#define C4                    0.5f //1.0f           // Adaptive law parameter in yaw
+#define C4                    0.5f             // Adaptive law parameter in yaw
+#define D1                    1.0f             // Adaptive law parameter in surge
+#define D2                    1.0f             // Adaptive law parameter in sway
+#define D3                    1.0f             // Adaptive law parameter in heave
+#define D4                    1.0f             // Adaptive law parameter in yaw
 #define M                     10               // number of adaptive parameters
-#define GAMMA                 100000.0f //10000.0f//500000.0f //10.0f //           // adaptive law gain
+#define GAMMA                 100000.0f           // adaptive law gain
 #define WP_RADIUS             20.0f      // default waypoint radius in cm
 
 

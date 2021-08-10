@@ -24,7 +24,7 @@ AC_NonLinearControl::AC_NonLinearControl(AP_AHRS_View & ahrs, const AP_InertialN
         _n(N0),
         _u1(u1),
         _AFLC(N0, dt, BETA1, BETA2, BETA3, BETA4, LAMBDA1, LAMBDA2, LAMBDA3, LAMBDA4,
-                 UMAX, UMIN, C1, C2, C3, C4, GAMMA),
+                 UMAX, UMIN, C1, C2, C3, C4, D1, D2, D3, D4, GAMMA),
         _ahrs(ahrs),
         _inav(inav),
         _motors(motors)
@@ -77,13 +77,13 @@ void AC_NonLinearControl::init_nonlin_control()
 
     // Define deta_r0
     Eigen::Vector4f deta_r0;
-    // deta_r0(0) = pos_vel_n(0);
-    // deta_r0(1) = pos_vel_n(1);
-    // deta_r0(2) = pos_vel_n(2);
-    // //deta_r0(3) = TBD
-    // //deta_r0(4) = TBD
-    // deta_r0(3) =  ang_vel_n(2);
-    deta_r0 = Eigen::Vector4f::Zero(4); 
+    deta_r0(0) = pos_vel_n(0);
+    deta_r0(1) = pos_vel_n(1);
+    deta_r0(2) = pos_vel_n(2);
+    //deta_r0(3) = TBD
+    //deta_r0(4) = TBD
+    deta_r0(3) =  ang_vel_n(2);
+    // deta_r0 = Eigen::Vector4f::Zero(4); 
 
     _AFLC.init_reference_model(eta_r0, deta_r0);
 

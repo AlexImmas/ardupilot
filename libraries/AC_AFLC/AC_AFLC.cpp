@@ -33,6 +33,7 @@ AC_AFLC::AC_AFLC(int n, float t,
     float l1, float l2, float l3, float l4, 
     float u1, float u2, 
     float c11, float c12, float c13, float c14, 
+    float d11, float d12, float d13, float d14,
     float g)
      : _n(n),
        _dt(t),
@@ -41,6 +42,7 @@ AC_AFLC::AC_AFLC(int n, float t,
       _uU(u1),
       _uL(u2),
       _c11(c11), _c12(c12), _c13(c13), _c14(c14), 
+      _d11(d11), _d12(d12), _d13(d13), _d14(d14), 
       _gain(g)
     {
         // Assign reference model bandwitch
@@ -51,6 +53,7 @@ AC_AFLC::AC_AFLC(int n, float t,
       
         // Assign adpater law paramenter
         _c1 << _c11, _c12, _c13, _c14;
+        _d1 << _d11, _d12, _d13, _d14;
 
         // Assign adpative law gain
         _gamma = _gain * Eigen::MatrixXf::Identity(10,10);
@@ -238,7 +241,7 @@ void AC_AFLC::update_parameters_law(Eigen::Vector4f eta, Eigen::Vector4f deta, E
     // std::cout << "nu:\n " << nu << "\n";
 
     // change of variables
-    _s = (deta - _deta_r) + _c1.cwiseProduct(eta-_eta_r);
+    _s = _d1.cwiseProduct(deta - _deta_r) + _c1.cwiseProduct(eta-_eta_r);
 
     // Parameters update law
     _dtheta = - _gamma.inverse() * _Phi.transpose() * _J.inverse() * _s;
