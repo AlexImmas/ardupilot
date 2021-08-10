@@ -32,6 +32,9 @@ bool Sub::start_command(const AP_Mission::Mission_Command& cmd)
         /// navigation commands
         ///
     case MAV_CMD_NAV_WAYPOINT:                  // 16  Navigate to Waypoint
+        // printf("Sub::start_command\n");
+        // printf("lat:   %d \n", cmd.content.location.lat);
+        // printf("lon:   %d \n", cmd.content.location.lng);
         do_nav_wp(cmd);
         break;
 
@@ -256,6 +259,9 @@ void Sub::do_nav_wp(const AP_Mission::Mission_Command& cmd)
     if (control_mode == AUTO){
         auto_wp_start(target_loc);
     } else if(control_mode == NONLIN){
+        // printf("Sub::do_nav_wp\n");
+        // printf("lat:   %d \n", target_loc.lat);
+        // printf("lon:   %d \n", target_loc.lng);
         nonlin_set_destination(target_loc);
     }
 

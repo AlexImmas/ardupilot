@@ -100,6 +100,7 @@ void AC_NonLinearControl::update_state()
     ang_vel_to_euler_rate(ang_b, ang_vel_b, ang_vel_n);
 
     // Position in NEU-frame (n), Velocity in NEU-frame (n) and in body-frame (b)
+    // Position in cm relative to home
     //Eigen::Vector3f pos_n     = _inav.get_position();
     Eigen::Vector3f pos_n;
     pos_n(0) = _inav.get_position()[0]; pos_n(1) = _inav.get_position()[1]; pos_n(2) = _inav.get_position()[2];
@@ -183,11 +184,9 @@ void AC_NonLinearControl::update_output()
 
 bool AC_NonLinearControl::update_target(const Vector3f& destination)
 {
-    //printf("running update_target\n");
-    // Compute heading
-    float heading;
-    //heading = -0.5*M_PI; 
-    heading = atan2 (destination[1]-_target(1),destination[0]-_target(0));
+    // Compute heading - keep initial heading
+    //float heading;
+    //heading = atan2 (destination[1]-_target(1),destination[0]-_target(0));
 
     // Set target to destination received by mavlink
     _target(0) = destination[0];
@@ -195,7 +194,7 @@ bool AC_NonLinearControl::update_target(const Vector3f& destination)
     _target(2) = destination[2];
     //_target(3) 
     //_target(4) 
-    _target(3) = heading;
+    //_target(3) = heading;
 
     _reached_destination = false;
 
@@ -206,8 +205,15 @@ bool AC_NonLinearControl::update_target_loc(const Location& destination)
 {
     Vector3f dest_neu;
 
+    // Hack for precision issue
+    Location destination2;
+    destination2.latlon_offset(destination, 338100000,-1183930000);
+
+    // printf("lat:   %d \n", destination2.lat);
+    // printf("lon:   %d \n", destination2.lng); 
+
     // convert destination location to NEU vector 3f
-    if(!destination.get_vector_from_origin_NEU(dest_neu)) { 
+    if(!destination2.get_vector_from_origin_NEU(dest_neu)) { 
         return false;
     };
 
@@ -226,15 +232,15 @@ bool AC_NonLinearControl::reached_wp_destination()
     _reached_destination = dist < WP_RADIUS;
 
     printf("NONLINCONTROL\n");
-    printf("target x: %f\n", _target(0));
-    printf("target y: %f\n", _target(1));
-    printf("target z: %f\n", _target(2));
-    printf("target psi: %f\n", _target(3));
-    printf("uuv x: %f\n", _eta(0));
-    printf("uuv y: %f\n", _eta(1));
-    printf("uuv z: %f\n", _eta(2));
-    printf("uuv psi: %f\n", _eta(3));
-    printf("distance: %f\n", dist);
+    printf("target x:   %f cm\n", _target(0));
+    printf("target y:   %f cm\n", _target(1));
+    printf("target z:   %f cm\n", _target(2));
+    printf("target psi: %f degrees\n", _target(3)*180/M_PI);
+    printf("uuv x:   %f cm\n", _eta(0));
+    printf("uuv y:   %f cm\n", _eta(1));
+    printf("uuv z:   %f cm\n", _eta(2));
+    printf("uuv psi: %f degrees\n", _eta(3)*180/M_PI);
+    printf("distance: %f cm\n", dist);
     printf("reached destination: %d\n", _reached_destination);
 
     return _reached_destination;

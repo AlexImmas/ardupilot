@@ -39,6 +39,9 @@ public:
     // set altitude
     void set_alt_cm(int32_t alt_cm, AltFrame frame);
 
+    // Add lat/lon offset
+    void latlon_offset(Location dest_ini, int32_t off_lat, int32_t off_lon);
+
     // get altitude (in cm) in the desired frame
     // returns false on failure to get altitude in the desired frame which
     // can only happen if the original frame or desired frame is above-terrain

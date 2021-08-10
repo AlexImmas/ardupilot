@@ -12,7 +12,7 @@ bool Sub::nonlin_init()
     // if (!position_ok()) {
     //     return false;
     // }
-    printf("nonlin commands: %u\n", mission.num_commands());
+    // printf("nonlin commands: %u\n", mission.num_commands());
     if (!position_ok() || mission.num_commands() < 2) {
         return false;
     }
@@ -67,7 +67,7 @@ void Sub::nonlin_run()
 // else return false if the waypoint is outside the fence
 bool Sub::nonlin_set_destination(const Vector3f& destination)
 {
-printf("running nonlin_set_destination_dest\n");
+// printf("running nonlin_set_destination_dest\n");
 #if AC_FENCE == ENABLED
     // reject destination if outside the fence
     const Location dest_loc(destination);
@@ -88,7 +88,7 @@ printf("running nonlin_set_destination_dest\n");
 
 bool Sub::nonlin_set_destination(const Location& dest_loc)
 {
-printf("running nonlin_set_destination_loc\n");
+// printf("running nonlin_set_destination_loc\n");
 
 #if AC_FENCE == ENABLED
     // reject destination outside the fence.

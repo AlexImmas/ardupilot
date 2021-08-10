@@ -48,6 +48,13 @@ Location::Location(const Vector3f &ekf_offset_neu)
     }
 }
 
+void Location::latlon_offset(Location dest_ini, int32_t off_lat, int32_t off_lon)
+{
+    lat = dest_ini.lat + off_lat;
+    lng = dest_ini.lng + off_lon;
+    alt = dest_ini.alt;
+}
+
 void Location::set_alt_cm(int32_t alt_cm, AltFrame frame)
 {
     alt = alt_cm;
@@ -192,6 +199,17 @@ bool Location::get_vector_xy_from_origin_NE(Vector2f &vec_ne) const
     }
     vec_ne.x = (lat-ekf_origin.lat) * LATLON_TO_CM;
     vec_ne.y = (lng-ekf_origin.lng) * LATLON_TO_CM * ekf_origin.longitude_scale();
+
+    // printf("get_vector_xy_from_origin_NE\n");
+    // printf("lat:   %d \n", lat);
+    // printf("lon:   %d \n", lng);
+    // printf("lat origin:   %d \n", ekf_origin.lat);
+    // printf("lon origin:   %d \n", ekf_origin.lng);
+    // printf("target x:   %f cm\n", vec_ne.x);
+    // printf("target y:   %f cm\n", vec_ne.y);
+    // printf("LATLON_CM: %f\n", LATLON_TO_CM);
+    // printf("long_scale: %f\n", ekf_origin.longitude_scale());
+
     return true;
 }
 
@@ -205,6 +223,10 @@ bool Location::get_vector_from_origin_NEU(Vector3f &vec_neu) const
     vec_neu.x = vec_ne.x;
     vec_neu.y = vec_ne.y;
 
+    // printf("get_vector_from_origin_NEU\n");
+    // printf("target x:   %f cm\n", vec_neu.x);
+    // printf("target y:   %f cm\n", vec_neu.y);
+    
     // convert altitude
     int32_t alt_above_origin_cm = 0;
     if (!get_alt_cm(AltFrame::ABOVE_ORIGIN, alt_above_origin_cm)) {
