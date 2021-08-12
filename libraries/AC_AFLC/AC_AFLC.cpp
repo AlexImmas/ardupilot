@@ -7,7 +7,7 @@
 #include "AC_AFLC.h"
 #include <math.h>   
 
-#include <iostream> // COMMENT OUT FOR PIXHAWK COMPILATION
+//#include <iostream> // COMMENT OUT FOR PIXHAWK COMPILATION
 
 //#pragma push_macro("_GLIBCXX_USE_C99_STDIO")
 //#undef _GLIBCXX_USE_C99_STDIO 
@@ -57,9 +57,9 @@ AC_AFLC::AC_AFLC(int n, float t,
 
         // Assign adpative law gain
         _gamma = _gain * Eigen::MatrixXf::Identity(10,10);
-        _gamma(4,4) = 0.005 * _gamma(4,4); 
-        _gamma(5,5) = 0.005 * _gamma(5,5); 
-        _gamma(9,9) = 0.005 * _gamma(9,9); 
+        _gamma(4,4) = 0.01 * _gamma(4,4); 
+        _gamma(5,5) = 0.01 * _gamma(5,5); 
+        _gamma(9,9) = 0.01 * _gamma(9,9); 
 
         // Initialize transformation matrices 
         _J  =  Eigen::Matrix4f::Identity(4,4);  
@@ -71,7 +71,8 @@ AC_AFLC::AC_AFLC(int n, float t,
 
         // Initialize adaptive variables
         _theta = Eigen::VectorXf::Zero(10);
-        _theta << 11.5, 5.5, 12.7, 14.57, 0.16, 0.12, 18.18, 21.66, 36.99, 1.55;
+        //_theta << 11.5, 5.5, 12.7, 14.57, 0.16, 0.12, 18.18, 21.66, 36.99, 1.55; // original
+        _theta << 20,    10,   14,    17, 0.16, 0.12,   -41,  -6.5,   -19, 1.55; // rad from convergence
         //_theta = Eigen::Vector10f(11.5, 5.5, 12.7, 14.57, 0.16, 0.12, 18.18, 21.66, 36.99, 1.55);
         _Phi = Eigen::MatrixXf::Zero(4,10); 
 
@@ -260,6 +261,9 @@ void AC_AFLC::update_control_input()
     // std::cout << "dtheta:\n " << _dtheta << "\n";
     // std::cout << "Phi:\n " << _Phi << "\n";
 
+    AP::logger().Write("DEB4", "TimeUS,u2", "Qf",
+                                    AP_HAL::micros64(),
+                                    (double)_u(2));
 
     // Thrust limitation
     for(int i = 0; i<4; i++)
@@ -348,7 +352,15 @@ Eigen::Vector4f AC_AFLC::get_ref_acceleration() const
 
 Eigen::Vector4f AC_AFLC::get_control_input() const
 {
-    return _u;
+
+    Eigen::Vector4f utemp;      // control input
+    utemp(0) = _u(0);
+    utemp(1) = _u(1);
+    utemp(2) = 0;
+    utemp(3) = _u(3);
+
+
+    return utemp; //_u;
 }
 
 void AC_AFLC::logdata(){

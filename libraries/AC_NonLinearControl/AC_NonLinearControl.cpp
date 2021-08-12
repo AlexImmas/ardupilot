@@ -77,13 +77,13 @@ void AC_NonLinearControl::init_nonlin_control()
 
     // Define deta_r0
     Eigen::Vector4f deta_r0;
-    deta_r0(0) = pos_vel_n(0);
-    deta_r0(1) = pos_vel_n(1);
-    deta_r0(2) = pos_vel_n(2);
-    //deta_r0(3) = TBD
-    //deta_r0(4) = TBD
-    deta_r0(3) =  ang_vel_n(2);
-    // deta_r0 = Eigen::Vector4f::Zero(4); 
+    // deta_r0(0) = pos_vel_n(0);  
+    // deta_r0(1) = pos_vel_n(1);
+    // deta_r0(2) = pos_vel_n(2);
+    // //deta_r0(3) = TBD
+    // //deta_r0(4) = TBD
+    // deta_r0(3) =  ang_vel_n(2);
+    deta_r0 = Eigen::Vector4f::Zero(4); 
 
     _AFLC.init_reference_model(eta_r0, deta_r0);
 
@@ -169,7 +169,7 @@ void AC_NonLinearControl::update_output()
 
     // Scale control inputs between [-1,1] except heave in [0,1]
     _tau = _tau/_u1;
-    _tau(2) = (_tau(2)+1)/2;
+    //_tau(2) = (_tau(2)+1)/2;
 
     _motors.set_forward(_tau(0));
     _motors.set_lateral(_tau(1));
@@ -178,8 +178,9 @@ void AC_NonLinearControl::update_output()
     _motors.set_roll(0);
     _motors.set_yaw(_tau(3));
 
-    AP::logger().Write("DEB1", "TimeUS,tau3", "Qf",
+    AP::logger().Write("DEB1", "TimeUS,tau2,tau3", "Qff",
                                     AP_HAL::micros64(),
+                                    (double)_tau(2),
                                     (double)_tau(3));
 
 }

@@ -300,7 +300,7 @@ void AP_Motors6DOF::output_armed_stabilizing()
         roll_thrust = (_roll_in + _roll_in_ff);
         pitch_thrust = (_pitch_in + _pitch_in_ff);
         yaw_thrust = (_yaw_in + _yaw_in_ff);
-        throttle_thrust = get_throttle_bidirectional();
+        throttle_thrust = _throttle_in; get_throttle_bidirectional();
         forward_thrust = _forward_in;
         lateral_thrust = _lateral_in;
 
@@ -406,7 +406,7 @@ void AP_Motors6DOF::output_armed_stabilizing_vectored()
     roll_thrust = (_roll_in + _roll_in_ff);
     pitch_thrust = (_pitch_in + _pitch_in_ff);
     yaw_thrust = (_yaw_in + _yaw_in_ff);
-    throttle_thrust = get_throttle_bidirectional();
+    throttle_thrust = _throttle_in; //get_throttle_bidirectional();
     forward_thrust = _forward_in;
     lateral_thrust = _lateral_in;
 
@@ -516,7 +516,7 @@ void AP_Motors6DOF::output_armed_stabilizing_vectored_6dof()
     roll_thrust = (_roll_in + _roll_in_ff);
     pitch_thrust = (_pitch_in + _pitch_in_ff);
     yaw_thrust = (_yaw_in + _yaw_in_ff);
-    throttle_thrust = get_throttle_bidirectional();
+    throttle_thrust = _throttle_in; //get_throttle_bidirectional();
     forward_thrust = _forward_in;
     lateral_thrust = _lateral_in;
 
