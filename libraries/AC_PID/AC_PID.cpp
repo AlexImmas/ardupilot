@@ -64,7 +64,8 @@ AC_PID::AC_PID(float initial_p, float initial_i, float initial_d, float initial_
     _dt(dt),
     _integrator(0.0f),
     _error(0.0f),
-    _derivative(0.0f)
+    _derivative(0.0f),
+    _measurement(0.0f)
 {
     // load parameter values from eeprom
     AP_Param::setup_object_defaults(this, var_info);
@@ -125,15 +126,19 @@ float AC_PID::update_all(float target, float measurement, bool limit)
         _flags._reset_filter = false;
         _target = target;
         _error = _target - measurement;
+        _measurement = measurement;
         _derivative = 0.0f;
     } else {
-        float error_last = _error;
+        //float error_last = _error;
+        float measurement_last = _measurement;
         _target += get_filt_T_alpha() * (target - _target);
         _error += get_filt_E_alpha() * ((_target - measurement) - _error);
+        _measurement = measurement;
 
         // calculate and filter derivative
         if (_dt > 0.0f) {
-            float derivative = (_error - error_last) / _dt;
+            //float derivative = (_error - error_last) / _dt;
+            float derivative = -(_measurement - measurement_last) / _dt;
             _derivative += get_filt_D_alpha() * (derivative - _derivative);
         }
     }

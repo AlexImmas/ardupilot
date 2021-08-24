@@ -131,6 +131,7 @@ protected:
     float _target;            // target value to enable filtering
     float _error;             // error value to enable filtering
     float _derivative;        // derivative value to enable filtering
+    float _measurement;       // measurement
 
     AP_Logger::PID_Info _pid_info;
 };

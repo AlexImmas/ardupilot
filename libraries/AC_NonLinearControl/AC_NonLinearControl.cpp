@@ -23,8 +23,12 @@ AC_NonLinearControl::AC_NonLinearControl(AP_AHRS_View & ahrs, const AP_InertialN
         _dt(dt),
         _n(N0),
         _u1(u1),
-        _AFLC(N0, dt, BETA1, BETA2, BETA3, BETA4, LAMBDA1, LAMBDA2, LAMBDA3, LAMBDA4,
-                 UMAX, UMIN, C1, C2, C3, C4, D1, D2, D3, D4, GAMMA),
+        // _AFLC(N0, dt, BETA1, BETA2, BETA3, BETA4, LAMBDA1, LAMBDA2, LAMBDA3, LAMBDA4,
+                 // UMAX, UMIN, C1, C2, C3, C4, D1, D2, D3, D4, GAMMA),
+        _PID_X(0.0015, 0.00, 0.0002, 0, 0.2, AC_PID_TFILT_HZ_DEFAULT , AC_PID_EFILT_HZ_DEFAULT,AC_PID_DFILT_HZ_DEFAULT, dt),
+        _PID_Y(0.002, 0.00, 0.0002, 0, 0.2, AC_PID_TFILT_HZ_DEFAULT , AC_PID_EFILT_HZ_DEFAULT,AC_PID_DFILT_HZ_DEFAULT, dt),
+        _PID_Z(0.004, 0.001, 0.002, 0, 0.2, AC_PID_TFILT_HZ_DEFAULT , AC_PID_EFILT_HZ_DEFAULT,AC_PID_DFILT_HZ_DEFAULT, dt),
+        _PID_YAW(1.5, 0, 1, 0, 0.2, AC_PID_TFILT_HZ_DEFAULT , AC_PID_EFILT_HZ_DEFAULT,AC_PID_DFILT_HZ_DEFAULT, dt),
         _ahrs(ahrs),
         _inav(inav),
         _motors(motors)
@@ -85,7 +89,7 @@ void AC_NonLinearControl::init_nonlin_control()
     // deta_r0(3) =  ang_vel_n(2);
     deta_r0 = Eigen::Vector4f::Zero(4); 
 
-    _AFLC.init_reference_model(eta_r0, deta_r0);
+    // _AFLC.init_reference_model(eta_r0, deta_r0);
 
 }
 
@@ -144,23 +148,35 @@ void AC_NonLinearControl::update_state()
 void AC_NonLinearControl::update_nonlin_control()
 {
 
-      // Update transformation matrices
-      _AFLC.update_transformation_matrices(_eta, _nu);
-      // Update reference position
-      _AFLC.update_reference_model(_target);
-      //  Anti windup
-      _AFLC.update_anti_windup(_eta);
-      // Update commanded acceleration
-      _AFLC.update_commanded_acceleration(_eta, _deta, _nu);
-      // Update parameters law
-      _AFLC.update_parameters_law(_eta, _deta, _nu);
-      // Compute control input
-      _AFLC.update_control_input();
-      //AFLC.update_control_input_na(_nu);
-      // return control inputs
-      _tau = _AFLC.get_control_input();
-      // log data after AFLC iteration
-      _AFLC.logdata();
+    // PID Control in surge
+    _tau(0) = _PID_X.update_all(_target(0), _eta(0), 0);
+
+    // PID Control in sway
+    _tau(1) = _PID_Y.update_all(_target(1), _eta(1), 0);
+
+    // PID Control in heave
+    _tau(2) = _PID_Z.update_all(_target(2), _eta(2), 0);
+
+     // PID Control in yaw
+    _tau(3) = _PID_YAW.update_all(_target(3), _eta(3), 0);   
+
+      // // Update transformation matrices
+      // _AFLC.update_transformation_matrices(_eta, _nu);
+      // // Update reference position
+      // _AFLC.update_reference_model(_target);
+      // //  Anti windup
+      // _AFLC.update_anti_windup(_eta);
+      // // Update commanded acceleration
+      // _AFLC.update_commanded_acceleration(_eta, _deta, _nu);
+      // // Update parameters law
+      // _AFLC.update_parameters_law(_eta, _deta, _nu);
+      // // Compute control input
+      // _AFLC.update_control_input();
+      // //AFLC.update_control_input_na(_nu);
+      // // return control inputs
+      // _tau = _AFLC.get_control_input();
+      // // log data after AFLC iteration
+      // _AFLC.logdata();
 
 }
 
@@ -168,11 +184,11 @@ void AC_NonLinearControl::update_output()
 {
 
     // Scale control inputs between [-1,1] except heave in [0,1]
-    _tau = _tau/_u1;
+    // _tau = _tau/_u1;
     //_tau(2) = (_tau(2)+1)/2;
 
-    _motors.set_forward(_tau(0));
-    _motors.set_lateral(_tau(1));
+    _motors.set_forward(-_tau(1));
+    _motors.set_lateral(_tau(0));
     _motors.set_throttle(_tau(2));
     _motors.set_pitch(0);
     _motors.set_roll(0);
@@ -197,7 +213,7 @@ bool AC_NonLinearControl::update_target(const Vector3f& destination)
     _target(2) = destination[2];
     //_target(3) 
     //_target(4) 
-    //_target(3) = heading;
+    // _target(3) = heading;
 
     _reached_destination = false;
 
@@ -245,6 +261,10 @@ bool AC_NonLinearControl::reached_wp_destination()
     printf("uuv psi: %f degrees\n", _eta(3)*180/M_PI);
     printf("distance: %f cm\n", dist);
     printf("reached destination: %d\n", _reached_destination);
+    printf("PID TERMS\n");
+    printf("P term: %f\n",_PID_Y.get_p());
+    printf(" Iterm: %f\n",_PID_Y.get_i());
+    printf("D term: %f\n",_PID_Y.get_d());
 
     return _reached_destination;
 }
@@ -335,4 +355,26 @@ void AC_NonLinearControl::logdata(){
                                         (double)_deta(1),
                                         (double)_deta(2),
                                         (double)_deta(3));
+    AP::logger().Write("PIDX", "TimeUS,P,I,D", "Qfff",
+                                        AP_HAL::micros64(),
+                                        (double)_PID_X.get_p(),
+                                        (double)_PID_X.get_i(),
+                                        (double)_PID_X.get_d());
+    AP::logger().Write("PIDY", "TimeUS,P,I,D", "Qfff",
+                                        AP_HAL::micros64(),
+                                        (double)_PID_Y.get_p(),
+                                        (double)_PID_Y.get_i(),
+                                        (double)_PID_Y.get_d());
+    AP::logger().Write("PIDZ", "TimeUS,P,I,D", "Qfff",
+                                        AP_HAL::micros64(),
+                                        (double)_PID_Z.get_p(),
+                                        (double)_PID_Z.get_i(),
+                                        (double)_PID_Z.get_d());
+     AP::logger().Write("PIDR", "TimeUS,P,I,D", "Qfff",
+                                        AP_HAL::micros64(),
+                                        (double)_PID_YAW.get_p(),
+                                        (double)_PID_YAW.get_i(),
+                                        (double)_PID_YAW.get_d());
+
+
 }

@@ -8,6 +8,7 @@
 //#define ALLOW_DOUBLE_MATH_FUNCTIONS
 //#include <AP_HAL/HAL.h>
 #include <AC_AFLC/AC_AFLC.h>
+#include <AC_PID/AC_PID.h>
 #include <AP_Logger/AP_Logger.h>         
 #include <AP_Param/AP_Param.h>
 //#include <AP_Vehicle/AP_Vehicle.h>              // common vehicle parameters
@@ -47,7 +48,7 @@
 #define D4                    1.0f             // Adaptive law parameter in yaw
 #define M                     10               // number of adaptive parameters
 #define GAMMA                 100000.0f           // adaptive law gain
-#define WP_RADIUS             5.0f //20.0f      // default waypoint radius in cm
+#define WP_RADIUS             5.0f      // default waypoint radius in cm
 
 
 class AC_NonLinearControl{
@@ -121,7 +122,11 @@ protected:
     bool _reached_destination;
 
     // references to control libraries
-    AC_AFLC _AFLC;
+    // AC_AFLC _AFLC;
+    AC_PID _PID_X;
+    AC_PID _PID_Y;
+    AC_PID _PID_Z;
+    AC_PID _PID_YAW;
 
     // references to inertial nav and ahrs libraries
     AP_AHRS_View &                  _ahrs;
